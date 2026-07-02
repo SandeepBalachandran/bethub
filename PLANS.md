@@ -44,13 +44,17 @@ Per user decision, this build deliberately deviates from the spec's PostgreSQL c
 
 ### Verification
 
-1. `npx prisma generate` and `npx prisma db push` succeed against the live MongoDB URI (confirms schema is valid Mongo Prisma syntax and the connection works).
-2. `npx tsx prisma/seed.ts` (or `node --loader ts-node/esm`) creates the admin user; confirm via `npx prisma studio` that the `User` collection has one document with a bcrypt hash (not plaintext) in `password`.
-3. `npm run dev`, visit `/login`, sign in with the seeded admin credentials — confirm redirect to a protected page succeeds and session cookie is set.
-4. Visit a protected route while logged out — confirm `proxy.ts` redirects to `/login` (not a 500 or open access).
-5. `npm run build` completes without type errors (validates `types/next-auth.d.ts` augmentation and Prisma client types).
+1. `npx prisma generate` and `npx prisma db push` succeed against the live MongoDB URI (confirms schema is valid Mongo Prisma syntax and the connection works). ✅ Done.
+2. `npx tsx prisma/seed.ts` creates the admin user; confirmed via runtime query that the `User` collection has one document with a bcrypt hash (not plaintext) in `password`. ✅ Done — `admin@fifu.local`.
+3. `npm run dev`, visit `/login`, sign in with the seeded admin credentials — confirm redirect to a protected page succeeds and session cookie is set. ✅ Done — tested via direct `curl` against `/api/auth/callback/credentials`, session cookie set, `/api/auth/session` returns `{ id, role: "ADMIN" }`.
+4. Visit a protected route while logged out — confirm `proxy.ts` redirects to `/login` (not a 500 or open access). ✅ Done — unauthenticated `GET /` returns `307 -> /login`.
+5. `npm run build` completes without type errors (validates `types/next-auth.d.ts` augmentation and Prisma client types). ✅ Done.
 
-**Status:** Approved, not yet implemented.
+### Implementation note: Prisma 7 → Prisma 6 downgrade
+
+`npm install prisma@latest` pulled **Prisma 7.8.0**, which turned out to be a hard blocker: Prisma 7's `PrismaClient` requires either a SQL driver `adapter` (e.g. `@prisma/adapter-pg`) or an `accelerateUrl` — confirmed via a live runtime test that threw `PrismaClientConstructorValidationError: Using engine type "client" requires either "adapter" or "accelerateUrl"`. No `@prisma/adapter-mongodb` package exists on npm, so **Prisma 7 cannot connect to MongoDB directly at all** in its current state. Per user decision, downgraded to **Prisma 6.19.3** (last stable 6.x), which still supports MongoDB the classic way — `url` directly in `schema.prisma`'s `datasource` block, no adapter needed. Confirmed working end-to-end against the live Atlas cluster. `package.json` now pins `prisma`/`@prisma/client` to `^6.19.3` — do not run `npm install prisma@latest` / `@prisma/client@latest` without re-confirming Mongo adapter support has shipped.
+
+**Status:** ✅ Implemented and verified.
 
 ---
 

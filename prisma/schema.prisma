@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum MatchStatus {
+  UPCOMING
+  LIVE
+  FINISHED
+}
+
+enum Round {
+  ROUND_OF_16
+  QUARTER_FINALS
+  SEMI_FINALS
+  FINAL
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  predictions Prediction[]
+}
+
+model Team {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  externalId Int?     @unique
+  name       String
+  shortName  String
+  fifaCode   String
+  flag       String?
+  createdAt  DateTime @default(now())
+
+  players           Player[]
+  homeMatches       Match[]      @relation("HomeTeam")
+  awayMatches       Match[]      @relation("AwayTeam")
+  wonMatches        Match[]      @relation("MatchWinnerTeam")
+  winnerPredictions Prediction[] @relation("PredictionWinnerTeam")
+}
+
+model Player {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  teamId   String  @db.ObjectId
+  name     String
+  position String?
+
+  team              Team               @relation(fields: [teamId], references: [id])
+  matchScorers      MatchScorer[]
+  predictionScorers PredictionScorer[]
+}
+
+model Match {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  externalId   Int?        @unique
+  round        Round
+  homeTeamId   String      @db.ObjectId
+  awayTeamId   String      @db.ObjectId
+  kickoffTime  DateTime
+  status       MatchStatus @default(UPCOMING)
+  winnerTeamId String?     @db.ObjectId
+  locked       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+
+  homeTeam    Team          @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam    Team          @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  winnerTeam  Team?         @relation("MatchWinnerTeam", fields: [winnerTeamId], references: [id])
+  scorers     MatchScorer[]
+  predictions Prediction[]
+}
+
+model MatchScorer {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  matchId  String @db.ObjectId
+  playerId String @db.ObjectId
+
+  match  Match  @relation(fields: [matchId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+}
+
+model Prediction {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  matchId      String   @db.ObjectId
+  winnerTeamId String   @db.ObjectId
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user       User               @relation(fields: [userId], references: [id])
+  match      Match              @relation(fields: [matchId], references: [id])
+  winnerTeam Team               @relation("PredictionWinnerTeam", fields: [winnerTeamId], references: [id])
+  scorers    PredictionScorer[]
+
+  @@unique([userId, matchId])
+}
+
+model PredictionScorer {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  predictionId String @db.ObjectId
+  playerId     String @db.ObjectId
+
+  prediction Prediction @relation(fields: [predictionId], references: [id])
+  player     Player     @relation(fields: [playerId], references: [id])
+}
