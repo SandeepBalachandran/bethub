@@ -158,11 +158,11 @@ Points are never stored — `PROJECT.MD` mandates dynamic calculation ("Never pe
 
 ### Verification
 
-1. Run the worked example from `PROJECT.MD` (predict Messi/Mbappe/Vinicius, actual Messi/Alvarez) through `calculateMatchPoints` — confirm total is `0`.
-2. Mark a seeded match finished with a winner and 1-2 scorers, reload `/leaderboard` — confirm points appear without any write to a "total points" field anywhere in the DB.
-3. Confirm sort order is strictly descending and the logged-in user's row is visually highlighted.
+1. Run the worked example from `PROJECT.MD` (predict Messi/Mbappe/Vinicius, actual Messi/Alvarez) through `calculateMatchPoints` — confirm total is `0`. ✅ Done via `scripts/verify-scoring.ts` — also checked the stated max (60) and min (-15) per-match bounds, both correct.
+2. Mark a seeded match finished with a winner and 1-2 scorers, reload `/leaderboard` — confirm points appear without any write to a "total points" field anywhere in the DB. ✅ Done live end-to-end: submitted a real prediction (winner Canada + 3 scorer picks) against a real synced match, finished the match via the same DB operations `finishMatch()` performs (winner Canada, 1 actual scorer matching 1 of the 3 picks), then loaded `/leaderboard` authenticated — table showed winner 30 / total 30, exactly matching the hand-computed expectation (30 winner + 10 − 5 − 5 scorer = 30). Confirmed via `grep` on `schema.prisma` that no points/total field exists anywhere in the DB — everything is computed on read.
+3. Confirm sort order is strictly descending and the logged-in user's row is visually highlighted. ✅ Done — verified rank "1" and the `bg-yellow` highlight + "(you)" label appear on the admin's own row.
 
-**Status:** Planned, not yet implemented.
+**Status:** ✅ Implemented and verified.
 
 ---
 

@@ -66,3 +66,68 @@ export async function deleteMatch(matchId: string) {
   await prisma.match.delete({ where: { id: matchId } });
   revalidatePath("/fixtures");
 }
+
+const finishMatchSchema = z.object({
+  winnerTeamId: z.string().min(1),
+  scorerPlayerIds: z.array(z.string().min(1)).default([]),
+});
+
+export async function finishMatch(
+  matchId: string,
+  input: z.infer<typeof finishMatchSchema>
+) {
+  await requireAdmin();
+  const data = finishMatchSchema.parse(input);
+
+  const match = await prisma.match.findUnique({ where: { id: matchId } });
+  if (!match) {
+    throw new Error("Match not found.");
+  }
+
+  if (data.winnerTeamId !== match.homeTeamId && data.winnerTeamId !== match.awayTeamId) {
+    throw new Error("Winner must be one of the two teams in this match.");
+  }
+
+  if (data.scorerPlayerIds.length > 0) {
+    const validPlayers = await prisma.player.findMany({
+      where: {
+        id: { in: data.scorerPlayerIds },
+        teamId: { in: [match.homeTeamId, match.awayTeamId] },
+      },
+      select: { id: true },
+    });
+    if (validPlayers.length !== data.scorerPlayerIds.length) {
+      throw new Error("Scorers must belong to one of the two teams in this match.");
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.match.update({
+      where: { id: matchId },
+      data: {
+        status: "FINISHED",
+        winnerTeamId: data.winnerTeamId,
+        locked: true,
+      },
+    });
+
+    await tx.matchScorer.deleteMany({ where: { matchId } });
+
+    if (data.scorerPlayerIds.length > 0) {
+      await tx.matchScorer.createMany({
+        data: data.scorerPlayerIds.map((playerId) => ({ matchId, playerId })),
+      });
+    }
+  });
+
+  revalidatePath("/fixtures");
+  revalidatePath(`/match/${matchId}`);
+  revalidatePath("/leaderboard");
+  revalidatePath("/admin");
+}
+
+export async function calculateLeaderboard() {
+  await requireAdmin();
+  revalidatePath("/leaderboard");
+  revalidatePath("/admin");
+}
