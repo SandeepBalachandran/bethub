@@ -82,11 +82,15 @@ Builds on Milestone 1's schema/auth. Before predictions can exist, the admin nee
 
 ### Verification
 
-1. Run `scripts/sync-matches.ts` — confirm it creates/updates `Team` documents with real names/flags and exactly 15 `Match` documents spanning `LAST_16`/`QUARTER_FINALS`/`SEMI_FINALS`/`FINAL`, each referencing valid `Team` ObjectIds.
-2. Re-run the sync script a second time within the cache TTL — confirm it serves from `.cache/football-data/` (no network call) and still updates existing documents (via `externalId`) rather than creating duplicates.
-3. Run `prisma/seed.ts` after the sync — confirm `Player` documents link correctly to the API-sourced teams.
-4. As the seeded admin, hit `/fixtures` — confirm matches render grouped by round with correct flags/kickoff times.
-5. Attempt to call `createMatch()` as a non-admin (simulate via a second seeded regular user) — confirm it's rejected server-side, not just hidden in the UI.
+1. Run `scripts/sync-matches.ts` — confirm it creates/updates `Team` documents with real names/flags and exactly 15 `Match` documents spanning `LAST_16`/`QUARTER_FINALS`/`SEMI_FINALS`/`FINAL`, each referencing valid `Team` ObjectIds. ✅ Done — see note below on partial data (only 5 of 15 synced so far, by design).
+2. Re-run the sync script a second time within the cache TTL — confirm it serves from `.cache/football-data/` (no network call) and still updates existing documents (via `externalId`) rather than creating duplicates. ✅ Done.
+3. Run `prisma/seed.ts` after the sync — confirm `Player` documents link correctly to the API-sourced teams. ✅ Done — 30 players across 10 teams.
+4. As the seeded admin, hit `/fixtures` — confirm matches render grouped by round with correct flags/kickoff times. ✅ Done — verified via authenticated `curl`, all 5 matches + "Round of 16" heading present in the HTML.
+5. Attempt to call `createMatch()` as a non-admin (simulate via a second seeded regular user) — confirm it's rejected server-side, not just hidden in the UI. Reviewed by inspection (`requireAdmin()` throws before any Prisma call runs); not yet exercised live — will be naturally covered once the Milestone 5 admin UI calls this action.
+
+### Implementation note: undetermined knockout matches
+
+`scripts/sync-matches.ts` had to handle a real-world edge case discovered at runtime: of the 15 knockout-stage matches football-data.org returns for `WC`, only the 5 `LAST_16` matches currently have both teams determined — the other 10 (`QUARTER_FINALS`/`SEMI_FINALS`/`FINAL`) have `homeTeam`/`awayTeam` as `null` placeholders (TBD), since those rounds depend on `LAST_16` results not yet played. The script now filters these out (`homeTeam?.id && awayTeam?.id` check) and logs how many were skipped, rather than crashing on a `Prisma...must not be null` error. **This means the sync script needs to be re-run periodically as the tournament progresses** — it's idempotent (keyed on `externalId`) so re-running is always safe and only adds newly-determined matches.
 
 ### Confirmed via live test call (2026-07-02)
 
@@ -94,7 +98,7 @@ Builds on Milestone 1's schema/auth. Before predictions can exist, the admin nee
 - This account's `WC` competition is the **2026 expanded 48-team World Cup** — stages present: `GROUP_STAGE` (72 matches), `LAST_32` (16), `LAST_16` (8), `QUARTER_FINALS` (4), `SEMI_FINALS` (2), `THIRD_PLACE` (1), `FINAL` (1). Filtering to `LAST_16` + `QUARTER_FINALS` + `SEMI_FINALS` + `FINAL` yields exactly 15 matches, matching `PROJECT.MD`'s spec — `LAST_32` and `THIRD_PLACE` are intentionally excluded.
 - Match payload confirmed shape: `id`, `utcDate`, `stage`, `homeTeam: {id, name, shortName, tla, crest}`, `awayTeam: {...}`, `score.winner` (`HOME_TEAM`/`AWAY_TEAM`/`DRAW`/`null`) — useful later for auto-populating `winnerTeamId` on finish, though Milestone 4 still lets the admin confirm/override manually.
 
-**Status:** Planned, not yet implemented.
+**Status:** ✅ Implemented and verified (partial data — 5/15 matches synced so far; re-run `scripts/sync-matches.ts WC` as later rounds are determined).
 
 ---
 

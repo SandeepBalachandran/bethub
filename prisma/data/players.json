@@ -1,0 +1,52 @@
+{
+  "CAN": [
+    { "name": "Jonathan David", "position": "Forward" },
+    { "name": "Alphonso Davies", "position": "Defender" },
+    { "name": "Tajon Buchanan", "position": "Midfielder" }
+  ],
+  "MAR": [
+    { "name": "Achraf Hakimi", "position": "Defender" },
+    { "name": "Hakim Ziyech", "position": "Midfielder" },
+    { "name": "Youssef En-Nesyri", "position": "Forward" }
+  ],
+  "PAR": [
+    { "name": "Miguel Almiron", "position": "Midfielder" },
+    { "name": "Julio Enciso", "position": "Forward" },
+    { "name": "Gustavo Gomez", "position": "Defender" }
+  ],
+  "FRA": [
+    { "name": "Kylian Mbappe", "position": "Forward" },
+    { "name": "Ousmane Dembele", "position": "Forward" },
+    { "name": "Aurelien Tchouameni", "position": "Midfielder" }
+  ],
+  "BRA": [
+    { "name": "Vinicius Junior", "position": "Forward" },
+    { "name": "Rodrygo", "position": "Forward" },
+    { "name": "Casemiro", "position": "Midfielder" }
+  ],
+  "NOR": [
+    { "name": "Erling Haaland", "position": "Forward" },
+    { "name": "Martin Odegaard", "position": "Midfielder" },
+    { "name": "Alexander Sorloth", "position": "Forward" }
+  ],
+  "MEX": [
+    { "name": "Santiago Gimenez", "position": "Forward" },
+    { "name": "Hirving Lozano", "position": "Forward" },
+    { "name": "Edson Alvarez", "position": "Midfielder" }
+  ],
+  "ENG": [
+    { "name": "Harry Kane", "position": "Forward" },
+    { "name": "Jude Bellingham", "position": "Midfielder" },
+    { "name": "Phil Foden", "position": "Midfielder" }
+  ],
+  "USA": [
+    { "name": "Christian Pulisic", "position": "Forward" },
+    { "name": "Weston McKennie", "position": "Midfielder" },
+    { "name": "Folarin Balogun", "position": "Forward" }
+  ],
+  "BEL": [
+    { "name": "Kevin De Bruyne", "position": "Midfielder" },
+    { "name": "Romelu Lukaku", "position": "Forward" },
+    { "name": "Jeremy Doku", "position": "Forward" }
+  ]
+}

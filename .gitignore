@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# football-data.org response cache
+/.cache
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
