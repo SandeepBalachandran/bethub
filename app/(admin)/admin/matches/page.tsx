@@ -15,7 +15,7 @@ export default async function AdminMatchesPage() {
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
-      <h1 className="text-2xl font-semibold text-accent">Manage Matches</h1>
+      <h1 className="text-2xl font-bold gradient-text">Manage Matches</h1>
 
       {matches.length === 0 ? (
         <p className="text-sm text-gray-500">
@@ -41,8 +41,16 @@ export default async function AdminMatchesPage() {
                   match={{
                     id: match.id,
                     round: match.round,
-                    homeTeam: { id: match.homeTeam.id, name: match.homeTeam.name },
-                    awayTeam: { id: match.awayTeam.id, name: match.awayTeam.name },
+                    homeTeam: {
+                      id: match.homeTeam.id,
+                      name: match.homeTeam.name,
+                      flag: match.homeTeam.flag,
+                    },
+                    awayTeam: {
+                      id: match.awayTeam.id,
+                      name: match.awayTeam.name,
+                      flag: match.awayTeam.flag,
+                    },
                     players: [...match.homeTeam.players, ...match.awayTeam.players].map((p) => ({
                       id: p.id,
                       name: p.name,

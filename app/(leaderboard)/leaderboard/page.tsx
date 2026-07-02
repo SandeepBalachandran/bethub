@@ -7,21 +7,13 @@ export default async function LeaderboardPage() {
   const leaderboard = await getLeaderboard();
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 p-6">
-      <h1 className="text-2xl font-semibold text-accent">Leaderboard</h1>
+    <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
+      <h1 className="text-2xl font-bold gradient-text">Leaderboard</h1>
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left text-gray-500">
-            <th className="py-2 pr-2">Rank</th>
-            <th className="py-2 pr-2">Player</th>
-            <th className="py-2 pr-2 text-right">Winner</th>
-            <th className="py-2 pr-2 text-right">Scorer</th>
-            <th className="py-2 pr-2 text-right">Penalty</th>
-            <th className="py-2 text-right">Total</th>
-          </tr>
-        </thead>
-        <tbody>
+      {leaderboard.length === 0 ? (
+        <p className="text-sm text-gray-500">No players yet.</p>
+      ) : (
+        <div className="space-y-2">
           {leaderboard.map((entry, index) => (
             <LeaderboardRow
               key={entry.userId}
@@ -30,11 +22,7 @@ export default async function LeaderboardPage() {
               isCurrentUser={entry.userId === user.id}
             />
           ))}
-        </tbody>
-      </table>
-
-      {leaderboard.length === 0 && (
-        <p className="text-sm text-gray-500">No users yet.</p>
+        </div>
       )}
     </main>
   );

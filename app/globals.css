@@ -7,10 +7,15 @@
   --foreground: #171717;
   --accent: #0d9488;
   --accent-foreground: #ffffff;
+  --secondary: #7c3aed;
+  --secondary-foreground: #ffffff;
   --highlight: #f59e0b;
   --highlight-foreground: #422006;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
   --danger: #dc2626;
   --danger-foreground: #ffffff;
+  --header-gradient: linear-gradient(135deg, #0d9488 0%, #7c3aed 100%);
 }
 
 .dark {
@@ -18,10 +23,15 @@
   --foreground: #ededed;
   --accent: #2dd4bf;
   --accent-foreground: #042f2e;
+  --secondary: #a78bfa;
+  --secondary-foreground: #2e1065;
   --highlight: #fbbf24;
   --highlight-foreground: #422006;
+  --success: #4ade80;
+  --success-foreground: #052e16;
   --danger: #f87171;
   --danger-foreground: #450a0a;
+  --header-gradient: linear-gradient(135deg, #0f766e 0%, #6d28d9 100%);
 }
 
 @theme inline {
@@ -29,8 +39,12 @@
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-danger: var(--danger);
   --color-danger-foreground: var(--danger-foreground);
   --font-sans: var(--font-poppins);
@@ -40,4 +54,35 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
+}
+
+.gradient-header {
+  background: var(--header-gradient);
+}
+
+.gradient-text {
+  background: var(--header-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 12%, transparent) 25%,
+    color-mix(in srgb, var(--secondary) 18%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 12%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }

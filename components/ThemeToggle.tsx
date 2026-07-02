@@ -21,10 +21,10 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="rounded border px-2 py-1 text-xs font-medium"
+      className="rounded-full border border-white/40 px-2 py-1 text-xs font-medium text-white transition hover:bg-white/20"
       aria-label="Toggle dark mode"
     >
-      {isDark ? "Light" : "Dark"}
+      {isDark ? "☀️ Light" : "🌙 Dark"}
     </button>
   );
 }

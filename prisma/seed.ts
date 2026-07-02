@@ -35,6 +35,32 @@ async function seedAdmin() {
   console.log(`Admin user ready: ${admin.email}`);
 }
 
+async function seedBettor() {
+  const name = process.env.BETTOR_NAME;
+  const email = process.env.BETTOR_EMAIL;
+  const password = process.env.BETTOR_PASSWORD;
+
+  if (!name || !email || !password) {
+    console.log("BETTOR_NAME/EMAIL/PASSWORD not set in .env — skipping demo user.");
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const bettor = await prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: {
+      name,
+      email,
+      password: hashedPassword,
+      role: "USER",
+    },
+  });
+
+  console.log(`Demo bettor user ready: ${bettor.email}`);
+}
+
 async function seedPlayers() {
   const filePath = path.join(process.cwd(), "prisma", "data", "players.json");
   const raw = await readFile(filePath, "utf-8");
@@ -78,6 +104,7 @@ async function seedPlayers() {
 
 async function main() {
   await seedAdmin();
+  await seedBettor();
   await seedPlayers();
 }
 

@@ -24,18 +24,22 @@ export default async function AdminDashboardPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-accent">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold gradient-text">Admin Dashboard</h1>
         <div className="flex gap-3 text-sm underline">
           <Link href="/admin/matches">Manage matches</Link>
-          <Link href="/admin/users">Manage users</Link>
+          <Link href="/admin/users">Manage players</Link>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Users" value={userCount} />
-        <StatCard label="Matches completed" value={`${finishedCount} / ${matchCount}`} />
-        <StatCard label="Predictions submitted" value={predictionCount} />
-        <StatCard label="Prediction %" value={`${predictionPercentage}%`} />
+        <StatCard label="Players" value={userCount} color="accent" />
+        <StatCard
+          label="Matches completed"
+          value={`${finishedCount} / ${matchCount}`}
+          color="secondary"
+        />
+        <StatCard label="Predictions submitted" value={predictionCount} color="highlight" />
+        <StatCard label="Prediction %" value={`${predictionPercentage}%`} color="success" />
       </div>
 
       <section className="space-y-2">
@@ -55,11 +59,26 @@ export default async function AdminDashboardPage() {
   );
 }
 
-function StatCard({ label, value }: { readonly label: string; readonly value: string | number }) {
+const STAT_CARD_COLORS = {
+  accent: "border-accent text-accent",
+  secondary: "border-secondary text-secondary",
+  highlight: "border-highlight text-highlight-foreground dark:text-highlight",
+  success: "border-success text-success",
+} as const;
+
+function StatCard({
+  label,
+  value,
+  color,
+}: {
+  readonly label: string;
+  readonly value: string | number;
+  readonly color: keyof typeof STAT_CARD_COLORS;
+}) {
   return (
-    <div className="rounded border p-4">
+    <div className={`rounded-lg border-t-4 bg-white p-4 shadow-sm dark:bg-white/5 ${STAT_CARD_COLORS[color]}`}>
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-xl font-semibold">{value}</p>
+      <p className="text-xl font-bold">{value}</p>
     </div>
   );
 }

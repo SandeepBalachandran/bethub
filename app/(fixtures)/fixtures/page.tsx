@@ -12,6 +12,13 @@ const ROUND_LABELS: Record<Round, string> = {
   FINAL: "Final",
 };
 
+const ROUND_BADGE_STYLES: Record<Round, string> = {
+  ROUND_OF_16: "bg-accent/15 text-accent",
+  QUARTER_FINALS: "bg-secondary/15 text-secondary",
+  SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",
+  FINAL: "bg-danger/15 text-danger",
+};
+
 export default async function FixturesPage() {
   const user = await requireAuth();
 
@@ -33,7 +40,7 @@ export default async function FixturesPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-4 sm:space-y-10 sm:p-6">
-      <h1 className="text-2xl font-semibold text-accent">Fixtures</h1>
+      <h1 className="text-2xl font-bold gradient-text">Fixtures</h1>
 
       {matches.length === 0 && (
         <p className="text-sm text-gray-500">
@@ -49,7 +56,13 @@ export default async function FixturesPage() {
 
         return (
           <section key={round} className="space-y-3">
-            <h2 className="text-lg font-medium">{ROUND_LABELS[round]}</h2>
+            <h2 className="inline-block">
+              <span
+                className={`rounded-full px-3 py-1 text-sm font-bold ${ROUND_BADGE_STYLES[round]}`}
+              >
+                {ROUND_LABELS[round]}
+              </span>
+            </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {roundMatches.map((match) => {
                 const cardData: MatchCardData = {

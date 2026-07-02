@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { calculateMatchPoints } from "@/lib/scoring";
 import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
+import { TeamFlag } from "@/components/TeamFlag";
 
 export default async function MatchDetailsPage({
   params,
@@ -47,20 +48,25 @@ export default async function MatchDetailsPage({
       : null;
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 p-6">
+    <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
       <PerfectPredictionConfetti isPerfect={points?.total === 60} />
-      <div>
-        <h1 className="text-xl font-semibold">
-          {match.homeTeam.name} vs {match.awayTeam.name}
-        </h1>
-        <p className="text-sm text-gray-500">
+
+      <div className="gradient-header rounded-xl p-5 text-white shadow-md">
+        <div className="flex items-center justify-center gap-3 text-lg font-bold">
+          <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={28} />
+          <span>{match.homeTeam.name}</span>
+          <span className="text-white/70">vs</span>
+          <span>{match.awayTeam.name}</span>
+          <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={28} />
+        </div>
+        <p className="mt-1 text-center text-xs text-white/80">
           Kickoff: {match.kickoffTime.toLocaleString()} · Status: {match.status}
         </p>
       </div>
 
       {isFinished && (
-        <section className="space-y-1 rounded border p-4 text-sm">
-          <p className="font-medium">
+        <section className="space-y-1 rounded-lg border-l-4 border-success bg-white p-4 text-sm shadow-sm dark:bg-white/5">
+          <p className="font-semibold text-success">
             Winner: {match.winnerTeam?.name ?? "—"}
           </p>
           <p>
@@ -72,8 +78,8 @@ export default async function MatchDetailsPage({
         </section>
       )}
 
-      <section className="space-y-1 rounded border p-4 text-sm">
-        <p className="font-medium">My prediction</p>
+      <section className="space-y-1 rounded-lg border-l-4 border-secondary bg-white p-4 text-sm shadow-sm dark:bg-white/5">
+        <p className="font-semibold text-secondary">My prediction</p>
         {myPrediction ? (
           <>
             <p>
@@ -89,7 +95,7 @@ export default async function MatchDetailsPage({
                 : "None"}
             </p>
             {points && (
-              <p className="font-medium">
+              <p className="font-bold text-highlight-foreground dark:text-highlight">
                 Points earned: {points.total} (winner {points.winnerPoints}, scorers{" "}
                 {points.scorerPoints})
               </p>
@@ -101,7 +107,10 @@ export default async function MatchDetailsPage({
       </section>
 
       {!isFinished && (
-        <Link href={`/predict/${match.id}`} className="text-sm underline">
+        <Link
+          href={`/predict/${match.id}`}
+          className="gradient-header block rounded-lg py-2 text-center text-sm font-semibold text-white shadow"
+        >
           Go to prediction page
         </Link>
       )}

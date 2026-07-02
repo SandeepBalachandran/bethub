@@ -5,6 +5,19 @@ import type { LeaderboardEntry } from "@/lib/leaderboard";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
+const AVATAR_COLORS = [
+  "bg-accent",
+  "bg-secondary",
+  "bg-highlight",
+  "bg-success",
+  "bg-danger",
+];
+
+function avatarColorFor(userId: string) {
+  const hash = [...userId].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
 export function LeaderboardRow({
   entry,
   rank,
@@ -17,25 +30,59 @@ export function LeaderboardRow({
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
   const medal = MEDALS[rank - 1];
+  const initials = entry.name.slice(0, 2).toUpperCase();
 
   return (
-    <motion.tr
+    <motion.div
       layout
       layoutId={entry.userId}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`border-b ${isCurrentUser ? "bg-highlight/15 font-medium" : ""}`}
+      className={`flex items-center gap-3 rounded-xl border p-3 shadow-sm transition ${
+        isCurrentUser
+          ? "border-highlight bg-highlight/10"
+          : "border-transparent bg-white dark:bg-white/5"
+      } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
     >
-      <td className="py-2 pr-2">
-        {medal ? <span aria-hidden>{medal}</span> : rank}
-      </td>
-      <td className="py-2 pr-2">
-        {entry.name}
-        {isCurrentUser && <span className="ml-1 text-xs text-gray-500">(you)</span>}
-      </td>
-      <td className="py-2 pr-2 text-right">{entry.winnerPoints}</td>
-      <td className="py-2 pr-2 text-right">{scorerGains}</td>
-      <td className="py-2 pr-2 text-right">{penalty}</td>
-      <td className="py-2 text-right font-semibold">{entry.total}</td>
-    </motion.tr>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold dark:bg-white/10">
+        {medal ?? <span className="text-gray-500">#{rank}</span>}
+      </div>
+
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColorFor(
+          entry.userId
+        )}`}
+      >
+        {initials}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold">
+          {entry.name}
+          {isCurrentUser && (
+            <span className="ml-1 rounded-full bg-highlight/20 px-2 py-0.5 text-[10px] font-medium text-highlight-foreground dark:text-highlight">
+              you
+            </span>
+          )}
+        </p>
+        <div className="mt-0.5 flex flex-wrap gap-1 text-[10px]">
+          <span className="rounded-full bg-accent/10 px-1.5 py-0.5 font-medium text-accent">
+            W +{entry.winnerPoints}
+          </span>
+          <span className="rounded-full bg-success/10 px-1.5 py-0.5 font-medium text-success">
+            S +{scorerGains}
+          </span>
+          {penalty < 0 && (
+            <span className="rounded-full bg-danger/10 px-1.5 py-0.5 font-medium text-danger">
+              P {penalty}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="text-right">
+        <p className="gradient-text text-xl font-extrabold">{entry.total}</p>
+        <p className="text-[10px] text-gray-400">pts</p>
+      </div>
+    </motion.div>
   );
 }

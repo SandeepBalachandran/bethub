@@ -14,7 +14,7 @@ export function MatchCard({ match }: { readonly match: MatchCardData }) {
   return (
     <Link
       href={`/predict/${match.id}`}
-      className="block rounded-lg border p-3 transition hover:border-accent hover:shadow-sm sm:p-4"
+      className="block rounded-lg border-l-4 border-accent bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-white/5 sm:p-4"
     >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
         <CountdownBadge kickoffTime={match.kickoffTime.toISOString()} />
@@ -27,13 +27,15 @@ export function MatchCard({ match }: { readonly match: MatchCardData }) {
 
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <TeamLabel name={match.homeTeam.name} flag={match.homeTeam.flag} />
-        <span className="text-sm text-gray-400">vs</span>
+        <span className="rounded-full bg-secondary/10 px-2 py-0.5 text-xs font-bold text-secondary">
+          VS
+        </span>
         <TeamLabel name={match.awayTeam.name} flag={match.awayTeam.flag} align="right" />
       </div>
 
       <div className="mt-3 text-xs">
         {match.hasPrediction ? (
-          <span className="font-medium text-accent">Prediction submitted</span>
+          <span className="font-semibold text-success">✓ Prediction submitted</span>
         ) : (
           <span className="text-gray-500">No prediction yet</span>
         )}

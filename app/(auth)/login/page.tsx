@@ -9,12 +9,16 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className="gradient-header flex min-h-screen items-center justify-center p-4">
       <form
         action={formAction}
-        className="w-full max-w-sm space-y-4 rounded-lg border p-6 shadow-sm"
+        className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
       >
-        <h1 className="text-xl font-semibold text-accent">Sign in</h1>
+        <div className="text-center">
+          <span className="text-3xl">🏆</span>
+          <h1 className="text-xl font-bold gradient-text">Sign in</h1>
+          <p className="text-xs text-gray-500">World Cup Prediction League</p>
+        </div>
 
         <div className="space-y-1">
           <label htmlFor="email" className="text-sm font-medium">
@@ -56,7 +60,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-50"
+          className="gradient-header w-full rounded px-3 py-2 text-sm font-semibold text-white shadow disabled:opacity-50"
         >
           {pending ? "Signing in..." : "Sign in"}
         </button>

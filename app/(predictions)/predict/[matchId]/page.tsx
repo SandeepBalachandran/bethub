@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { PredictionForm } from "@/components/features/predictions/PredictionForm";
+import { TeamFlag } from "@/components/TeamFlag";
 
 export default async function PredictPage({
   params,
@@ -31,12 +32,14 @@ export default async function PredictPage({
   const existingPrediction = match.predictions[0] ?? null;
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 p-6">
-      <div>
-        <h1 className="text-xl font-semibold">
+    <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
+      <div className="gradient-header rounded-xl p-5 text-white shadow-md">
+        <h1 className="flex items-center justify-center gap-2 text-lg font-bold">
+          <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={24} />
           {match.homeTeam.name} vs {match.awayTeam.name}
+          <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={24} />
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="mt-1 text-center text-xs text-white/80">
           Kickoff: {match.kickoffTime.toLocaleString()}
         </p>
       </div>

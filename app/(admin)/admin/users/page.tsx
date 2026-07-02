@@ -10,7 +10,7 @@ export default async function AdminUsersPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-      <h1 className="text-2xl font-semibold text-accent">Manage Users</h1>
+      <h1 className="text-2xl font-bold gradient-text">Manage Players</h1>
 
       <CreateUserForm />
 

@@ -4,12 +4,13 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteMatch, finishMatch, setMatchLocked } from "@/actions/match";
+import { TeamFlag } from "@/components/TeamFlag";
 
 export type AdminMatchRowData = {
   id: string;
   round: string;
-  homeTeam: { id: string; name: string };
-  awayTeam: { id: string; name: string };
+  homeTeam: { id: string; name: string; flag: string | null };
+  awayTeam: { id: string; name: string; flag: string | null };
   players: { id: string; name: string; teamId: string }[];
   kickoffTime: string;
   status: string;
@@ -39,7 +40,11 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
     <tr className="border-b align-top">
       <td className="py-2 pr-2 text-xs">{match.round}</td>
       <td className="py-2 pr-2">
-        {match.homeTeam.name} vs {match.awayTeam.name}
+        <span className="flex items-center gap-1.5">
+          <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={16} />
+          {match.homeTeam.name} vs {match.awayTeam.name}
+          <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={16} />
+        </span>
       </td>
       <td className="py-2 pr-2 text-xs">{new Date(match.kickoffTime).toLocaleString()}</td>
       <td className="py-2 pr-2 text-xs">{match.status}</td>

@@ -242,4 +242,61 @@ Follow-up requested after Milestone 5: all screens (including admin tables, whic
 
 **Status:** ✅ Implemented; Poppins font and redirect fix verified live. Visual dark-mode/mobile-viewport check not done in an actual browser this session — recommend a manual pass.
 
-**Status:** Planned, not yet implemented.
+---
+
+## Milestone 7: Demo Bettor Account + Expanded Colorful Redesign
+
+### Context
+
+Follow-up request: (1) a non-admin login to actually test the "bettor" experience separately from admin, (2) the Milestone 6 color pass was too conservative (mostly just accent-colored text on an otherwise white/gray/black UI) — needed a genuinely colorful redesign, especially the header.
+
+### Scope
+
+1. Seeded a second demo user via `prisma/seed.ts` + new `.env` vars (`BETTOR_NAME`/`BETTOR_EMAIL`/`BETTOR_PASSWORD`) — regular `USER` role, so it exercises the non-admin path (no `/admin` link in header, blocked from `/admin/*` routes).
+2. Expanded `globals.css` palette: added `--secondary` (violet) and `--success` (green) on top of the existing accent/highlight/danger, plus a `--header-gradient` (teal → violet) with light/dark variants, and two utility classes: `.gradient-header` (solid gradient background) and `.gradient-text` (gradient-clipped text for headings).
+3. Rebuilt `SiteHeader` with the gradient background, a 🏆 FIFU wordmark, pill-shaped nav links with hover states, and the Admin link styled in the highlight color to stand out.
+4. Applied `.gradient-text` to every major page `<h1>` (Fixtures, Leaderboard, My Predictions, Admin Dashboard/Matches/Users, Login).
+5. Colorized `MatchCard` (left accent border, secondary-colored "VS" pill, success-colored "submitted" checkmark), round badges on Fixtures/My Predictions (distinct color per round: accent/secondary/highlight/danger), admin dashboard `StatCard`s (each with a different colored top border), and the login page (full gradient background, card-on-white layout).
+6. Found and fixed a genuine gap while doing this: `app/page.tsx` (root `/`) — see Milestone 6 notes, already fixed there.
+
+### Key files
+
+- `app/globals.css`, `components/SiteHeader.tsx`, `components/ThemeToggle.tsx`, `components/features/matches/MatchCard.tsx`, `app/(fixtures)/fixtures/page.tsx`, `app/(predictions)/my-predictions/page.tsx`, `app/(admin)/admin/page.tsx`, `app/(auth)/login/page.tsx`, `prisma/seed.ts`, `.env`.
+
+### Verification
+
+1. Ran `npx tsx prisma/seed.ts` — confirmed both `admin@fifu.local` and the new `bettor@fifu.local` exist, and the player count stayed at 30 (upsert-safe, no duplicates from re-running the full seed).
+2. Signed in live as `bettor@fifu.local` / `Predict123!`, fetched `/fixtures` authenticated — confirmed the response HTML contains `gradient-header`, `gradient-text`, `bg-accent`, `bg-secondary` classes (not just configured, genuinely rendered in this user's session).
+3. Fetched the actual built CSS chunk via `curl` and confirmed both the light (`#0d9488 → #7c3aed`) and dark (`#0f766e → #6d28d9`) `linear-gradient(...)` values are genuinely compiled in, not just present in source.
+4. Clean `npx tsc --noEmit` and `npm run build` after all changes.
+
+**Status:** ✅ Implemented and verified live (bettor login + colorful classes + compiled gradient CSS all confirmed). Visual/browser-based check of the full color scheme across light and dark mode not done this session — recommend a manual look.
+
+---
+
+## Milestone 8: Shimmer Skeletons, Country Flags Everywhere, Mobile Bottom Nav, Redesigned Leaderboard
+
+### Context
+
+Follow-up: skeleton loaders were plain gray pulse blocks (not eye-catching); country flags only appeared on the Fixtures page's `MatchCard`, nowhere else; navigation was a top header only, not app-like on mobile; the leaderboard was a plain `<table>`. User also clarified terminology: "bettor" = regular player (`role: USER`), not a separate concept — UI copy updated from "Users" to "Players" in admin screens to match (role enum stays `USER` internally, this is copy-only).
+
+### Scope
+
+1. **Shimmer skeletons**: added a `.skeleton` CSS class (`app/globals.css`) using a `@keyframes shimmer` gradient sweep through the accent/secondary colors (not plain gray), plus a reusable `components/Skeleton.tsx`. Rebuilt every `loading.tsx` (fixtures, leaderboard, my-predictions, admin, plus two new ones for `/match/[matchId]` and `/predict/[matchId]` that didn't have loading states before) to use shaped skeleton layouts matching their real content instead of generic gray boxes.
+2. **Country flags everywhere**: new `components/TeamFlag.tsx` wrapping the existing `Team.flag` URL (already fetched from football-data.org's `crest` field since Milestone 2, but only ever displayed in `MatchCard`). Added it to Match Details, Predict page, My Predictions list rows, and the admin Matches table.
+3. **Mobile bottom nav**: new `components/BottomNav.tsx` — fixed bottom tab bar (gradient background, icon + label per tab: Fixtures/My Picks/Ranks/+Admin if applicable), visible only below the `sm` breakpoint (`sm:hidden`), respects `env(safe-area-inset-bottom)` for notched phones. `SiteHeader`'s nav links are now `hidden sm:flex` (desktop only) since the bottom bar covers mobile. `body` gets `pb-16 sm:pb-0` so page content isn't hidden behind the fixed bar.
+4. **Redesigned leaderboard**: replaced the `<table>` with a card-list (`LeaderboardRow` rewritten) — rank badge (medal emoji for top 3, `#N` otherwise), colored avatar circle (deterministic color per user from a simple hash of `userId`), name + small colored pill breakdown (W/S/P), large gradient-text total. Much more mobile-friendly than a 6-column table and more visually engaging.
+5. Renamed admin UI copy: "Manage Users" → "Manage Players", "Users" stat card → "Players" (no schema/role changes — `User` model and `Role.USER` enum value are unchanged, this is display text only).
+
+### Key files
+
+- `app/globals.css` (shimmer keyframes), `components/Skeleton.tsx`, `components/TeamFlag.tsx`, `components/BottomNav.tsx`, `components/SiteHeader.tsx`, `components/features/leaderboard/LeaderboardRow.tsx`, `app/(leaderboard)/leaderboard/page.tsx`, all `loading.tsx` files, `app/(match)/match/[matchId]/page.tsx`, `app/(predictions)/predict/[matchId]/page.tsx`, `app/(predictions)/my-predictions/page.tsx`, `components/features/admin/AdminMatchRow.tsx`, `app/(admin)/admin/matches/page.tsx`, `app/(admin)/admin/page.tsx`, `app/(admin)/admin/users/page.tsx`, `app/layout.tsx`.
+
+### Verification
+
+1. Signed in live as the bettor, fetched `/fixtures` — confirmed real flag image URLs (`crests.football-data.org`) and the bottom nav's `aria-label="Primary"` + `sm:hidden` both present in the authenticated response HTML.
+2. Fetched `/leaderboard` live — confirmed the new card-based classes (`rounded-full bg-accent`, `bg-highlight`, `bg-success`, `gradient-text`, `pts`) render with real seeded data, not just present in source.
+3. Fetched the built CSS chunk directly and confirmed `@keyframes shimmer` and the `shimmer` animation reference are genuinely compiled in.
+4. Clean `npx tsc --noEmit` and `npm run build`.
+
+**Status:** ✅ Implemented and verified live (flags, bottom nav markers, leaderboard card classes, and shimmer CSS all confirmed present in real server responses/build output). Visual/browser check of how the bottom nav and shimmer animation actually *look* in motion not done this session (no browser tool used) — recommend a manual look, especially the bottom nav on an actual phone-width viewport.
