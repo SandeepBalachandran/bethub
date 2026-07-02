@@ -67,6 +67,13 @@ export async function deleteMatch(matchId: string) {
   revalidatePath("/fixtures");
 }
 
+export async function setMatchLocked(matchId: string, locked: boolean) {
+  await requireAdmin();
+  await prisma.match.update({ where: { id: matchId }, data: { locked } });
+  revalidatePath("/fixtures");
+  revalidatePath("/admin/matches");
+}
+
 const finishMatchSchema = z.object({
   winnerTeamId: z.string().min(1),
   scorerPlayerIds: z.array(z.string().min(1)).default([]),

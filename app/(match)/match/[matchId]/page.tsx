@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { calculateMatchPoints } from "@/lib/scoring";
+import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
 
 export default async function MatchDetailsPage({
   params,
@@ -47,6 +48,7 @@ export default async function MatchDetailsPage({
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-6">
+      <PerfectPredictionConfetti isPerfect={points?.total === 60} />
       <div>
         <h1 className="text-xl font-semibold">
           {match.homeTeam.name} vs {match.awayTeam.name}

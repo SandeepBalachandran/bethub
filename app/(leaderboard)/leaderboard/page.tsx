@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/authz";
 import { getLeaderboard } from "@/lib/leaderboard";
+import { LeaderboardRow } from "@/components/features/leaderboard/LeaderboardRow";
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
@@ -21,28 +22,14 @@ export default async function LeaderboardPage() {
           </tr>
         </thead>
         <tbody>
-          {leaderboard.map((entry, index) => {
-            const isCurrentUser = entry.userId === user.id;
-            const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
-            const scorerGains = entry.scorerPoints - penalty;
-
-            return (
-              <tr
-                key={entry.userId}
-                className={`border-b ${isCurrentUser ? "bg-yellow-50 font-medium" : ""}`}
-              >
-                <td className="py-2 pr-2">{index + 1}</td>
-                <td className="py-2 pr-2">
-                  {entry.name}
-                  {isCurrentUser && <span className="ml-1 text-xs text-gray-500">(you)</span>}
-                </td>
-                <td className="py-2 pr-2 text-right">{entry.winnerPoints}</td>
-                <td className="py-2 pr-2 text-right">{scorerGains}</td>
-                <td className="py-2 pr-2 text-right">{penalty}</td>
-                <td className="py-2 text-right font-semibold">{entry.total}</td>
-              </tr>
-            );
-          })}
+          {leaderboard.map((entry, index) => (
+            <LeaderboardRow
+              key={entry.userId}
+              entry={entry}
+              rank={index + 1}
+              isCurrentUser={entry.userId === user.id}
+            />
+          ))}
         </tbody>
       </table>
 
