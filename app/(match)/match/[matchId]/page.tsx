@@ -3,8 +3,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { calculateMatchPoints } from "@/lib/scoring";
+import { isMatchLocked } from "@/lib/match-lock";
 import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
 import { TeamFlag } from "@/components/TeamFlag";
+
+const SCORER_EMOJI = "⚽";
 
 export default async function MatchDetailsPage({
   params,
@@ -22,8 +25,7 @@ export default async function MatchDetailsPage({
       winnerTeam: true,
       scorers: { include: { player: true } },
       predictions: {
-        where: { userId: user.id },
-        include: { scorers: { include: { player: true } } },
+        include: { user: true, winnerTeam: true, scorers: { include: { player: true } } },
       },
     },
   });
@@ -32,8 +34,10 @@ export default async function MatchDetailsPage({
     notFound();
   }
 
-  const myPrediction = match.predictions[0] ?? null;
+  const myPrediction = match.predictions.find((p) => p.userId === user.id) ?? null;
   const isFinished = match.status === "FINISHED";
+  const isLocked = isMatchLocked(match);
+  const otherPredictions = match.predictions.filter((p) => p.userId !== user.id);
 
   const points =
     isFinished && myPrediction
@@ -105,6 +109,56 @@ export default async function MatchDetailsPage({
           <p className="text-gray-500">No prediction submitted.</p>
         )}
       </section>
+
+      {isLocked ? (
+        <section className="card space-y-3 p-4 text-sm">
+          <p className="font-semibold">Everyone&apos;s predictions</p>
+          {otherPredictions.length === 0 ? (
+            <p className="text-gray-500">No one else predicted this match.</p>
+          ) : (
+            <div className="space-y-3">
+              {otherPredictions.map((prediction) => (
+                <div
+                  key={prediction.id}
+                  className="rounded-xl bg-black/2 p-3 dark:bg-white/5"
+                >
+                  <p className="font-medium">{prediction.user.name}</p>
+                  <div className="mt-1 flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                    <span className="text-xs font-semibold text-gray-400">Winner</span>
+                    <TeamFlag
+                      flag={prediction.winnerTeam.flag}
+                      name={prediction.winnerTeam.name}
+                      size={16}
+                    />
+                    <span>{prediction.winnerTeam.name}</span>
+                  </div>
+                  <div className="mt-1 flex items-start gap-2 text-gray-600 dark:text-gray-300">
+                    <span className="mt-0.5 shrink-0 text-xs font-semibold text-gray-400">
+                      Scorers
+                    </span>
+                    {prediction.scorers.length > 0 ? (
+                      <div className="flex flex-wrap gap-x-3 gap-y-1">
+                        {prediction.scorers.map((s) => (
+                          <span key={s.id}>
+                            {SCORER_EMOJI} {s.player.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">None</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        <p className="text-center text-xs text-gray-500">
+          Other players&apos; predictions unlock once this match locks (30 minutes before
+          kickoff).
+        </p>
+      )}
 
       {!isFinished && (
         <Link
