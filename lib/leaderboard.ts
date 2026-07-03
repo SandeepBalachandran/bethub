@@ -11,7 +11,7 @@ export type LeaderboardEntry = {
 
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
   const [users, finishedMatches] = await Promise.all([
-    prisma.user.findMany({ select: { id: true, name: true } }),
+    prisma.user.findMany({ where: { role: "USER" }, select: { id: true, name: true } }),
     prisma.match.findMany({
       where: { status: "FINISHED" },
       include: {

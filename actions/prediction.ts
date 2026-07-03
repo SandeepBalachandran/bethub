@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
+import { isMatchLocked } from "@/lib/match-lock";
 
 const predictionSchema = z.object({
   matchId: z.string().min(1),
@@ -30,8 +31,10 @@ export async function submitPrediction(input: PredictionInput) {
     throw new Error("Match not found.");
   }
 
-  if (match.locked || match.kickoffTime.getTime() <= Date.now()) {
-    throw new Error("Predictions are locked for this match.");
+  if (isMatchLocked(match)) {
+    throw new Error(
+      "Predictions are locked for this match (locking happens automatically 30 minutes before kickoff)."
+    );
   }
 
   if (match.homeTeamId === match.awayTeamId) {

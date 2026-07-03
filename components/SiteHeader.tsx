@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { auth, signOut } from "@/lib/auth";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { auth } from "@/lib/auth";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import { BottomNav } from "@/components/BottomNav";
 
 export async function SiteHeader() {
@@ -49,21 +49,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <span className="hidden text-xs text-white/80 sm:inline">{session.user.name}</span>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-full border border-white/40 px-3 py-1 text-xs transition hover:bg-white/20"
-            >
-              Sign out
-            </button>
-          </form>
+          <ProfileMenu name={session.user.name ?? "?"} />
         </div>
       </header>
 

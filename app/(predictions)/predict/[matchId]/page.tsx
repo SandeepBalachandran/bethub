@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/authz";
 import { PredictionForm } from "@/components/features/predictions/PredictionForm";
 import { TeamFlag } from "@/components/TeamFlag";
 import { MoneyRulesCard } from "@/components/MoneyRulesCard";
+import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
 
 export default async function PredictPage({
   params,
@@ -29,7 +30,7 @@ export default async function PredictPage({
     notFound();
   }
 
-  const isLocked = match.locked || match.kickoffTime.getTime() <= Date.now();
+  const isLocked = isMatchLocked(match);
   const isTbd = match.homeTeam.fifaCode === "TBD" || match.awayTeam.fifaCode === "TBD";
   const existingPrediction = match.predictions[0] ?? null;
 
@@ -56,6 +57,10 @@ export default async function PredictPage({
       ) : isLocked ? (
         <div className="card border-danger/30 bg-danger/10 p-4 text-sm text-danger">
           Predictions are locked for this match.
+          <p className="mt-1 text-xs text-danger/80">
+            Predictions lock automatically {AUTO_LOCK_MINUTES_BEFORE_KICKOFF} minutes before
+            kickoff.
+          </p>
           {existingPrediction && (
             <p className="mt-2">
               Your prediction: winner{" "}
@@ -66,21 +71,27 @@ export default async function PredictPage({
           )}
         </div>
       ) : (
-        <PredictionForm
-          matchId={match.id}
-          homeTeam={{
-            id: match.homeTeam.id,
-            name: match.homeTeam.name,
-            players: match.homeTeam.players,
-          }}
-          awayTeam={{
-            id: match.awayTeam.id,
-            name: match.awayTeam.name,
-            players: match.awayTeam.players,
-          }}
-          initialWinnerTeamId={existingPrediction?.winnerTeamId ?? null}
-          initialScorerPlayerIds={existingPrediction?.scorers.map((s) => s.playerId) ?? []}
-        />
+        <>
+          <p className="text-xs text-gray-500">
+            Predictions lock automatically {AUTO_LOCK_MINUTES_BEFORE_KICKOFF} minutes before
+            kickoff — get your picks in before then.
+          </p>
+          <PredictionForm
+            matchId={match.id}
+            homeTeam={{
+              id: match.homeTeam.id,
+              name: match.homeTeam.name,
+              players: match.homeTeam.players,
+            }}
+            awayTeam={{
+              id: match.awayTeam.id,
+              name: match.awayTeam.name,
+              players: match.awayTeam.players,
+            }}
+            initialWinnerTeamId={existingPrediction?.winnerTeamId ?? null}
+            initialScorerPlayerIds={existingPrediction?.scorers.map((s) => s.playerId) ?? []}
+          />
+        </>
       )}
     </main>
   );

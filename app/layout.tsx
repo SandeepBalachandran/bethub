@@ -28,7 +28,7 @@ export default function RootLayout({
       className={`${poppins.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col pb-16 sm:pb-0">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light">
           <SiteHeader />
           {children}
           <Toaster richColors position="top-center" />

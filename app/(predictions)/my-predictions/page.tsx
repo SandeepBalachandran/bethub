@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { TeamFlag } from "@/components/TeamFlag";
+import { isMatchLocked } from "@/lib/match-lock";
 import type { Round } from "@prisma/client";
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
@@ -19,6 +20,8 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
   SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",
   FINAL: "bg-danger/15 text-danger",
 };
+
+const SCORER_EMOJI = "⚽";
 
 export default async function MyPredictionsPage() {
   const user = await requireAuth();
@@ -70,34 +73,55 @@ export default async function MyPredictionsPage() {
             </h2>
             <div className="space-y-2">
               {roundPredictions.map((prediction) => {
-                const isLocked =
-                  prediction.match.locked ||
-                  prediction.match.kickoffTime.getTime() <= Date.now();
+                const isLocked = isMatchLocked(prediction.match);
 
                 return (
                   <Link
                     key={prediction.id}
                     href={`/match/${prediction.match.id}`}
-                    className="card card-interactive block border-l-4 border-secondary p-3 text-sm"
+                    className="card card-interactive block space-y-2 border-l-4 border-secondary p-3 text-sm"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <TeamFlag flag={prediction.match.homeTeam.flag} name={prediction.match.homeTeam.name} />
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 font-medium">
+                        <TeamFlag
+                          flag={prediction.match.homeTeam.flag}
+                          name={prediction.match.homeTeam.name}
+                        />
                         {prediction.match.homeTeam.name} vs {prediction.match.awayTeam.name}
-                        <TeamFlag flag={prediction.match.awayTeam.flag} name={prediction.match.awayTeam.name} />
+                        <TeamFlag
+                          flag={prediction.match.awayTeam.flag}
+                          name={prediction.match.awayTeam.name}
+                        />
                       </span>
                       {isLocked && (
-                        <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
+                        <span className="shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
                           Locked
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-gray-500">
-                      Winner: {prediction.winnerTeam.name} · Scorers:{" "}
-                      {prediction.scorers.length > 0
-                        ? prediction.scorers.map((s) => s.player.name).join(", ")
-                        : "None"}
-                    </p>
+
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                      <span className="text-xs font-semibold text-gray-400">Winner</span>
+                      <TeamFlag flag={prediction.winnerTeam.flag} name={prediction.winnerTeam.name} size={16} />
+                      <span>{prediction.winnerTeam.name}</span>
+                    </div>
+
+                    <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">
+                      <span className="mt-0.5 shrink-0 text-xs font-semibold text-gray-400">
+                        Scorers
+                      </span>
+                      {prediction.scorers.length > 0 ? (
+                        <div className="flex flex-wrap gap-x-3 gap-y-1">
+                          {prediction.scorers.map((s) => (
+                            <span key={s.id}>
+                              {SCORER_EMOJI} {s.player.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">None</span>
+                      )}
+                    </div>
                   </Link>
                 );
               })}

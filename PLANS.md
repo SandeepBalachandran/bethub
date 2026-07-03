@@ -582,4 +582,53 @@ After the initial pass, three more issues came up:
 2. **`/admin/matches` no longer scrolls horizontally.** Root cause: the page rendered matches as a `<table>` with a wide `Finish` column (winner select + 3 scorer selects + submit button all inline), so even the `.responsive-table` mobile fix from Follow-up 1 couldn't make that column narrow enough without truncating controls. Redesigned `app/(admin)/admin/matches/page.tsx` and `components/features/admin/AdminMatchRow.tsx` from a `<table>`/`<tr>` layout to a **card-list layout** (`<div className="card">` per match, `space-y-3` list) — round/kickoff/status header row, team names, lock/delete buttons, then a `grid grid-cols-1 sm:grid-cols-2` of the finish-match controls. No table semantics left on this page, so there's no min-width to fight on any screen size.
 3. **Live-sync error hardening** — `fetchCompetitionMatches`/`fetchLiveCompetitionMatches`/`fetchTeamSquad` in `lib/football-data.ts` now include the response body (first 300 chars) in thrown errors, so a failed sync surfaces the actual football-data.org error (e.g. invalid token, rate limit, restricted endpoint) in the admin's toast instead of just an HTTP status code. Also raised `fetchLiveCompetitionMatches`'s default cache window from 60s to 300s to reduce how often `/fixtures` re-hits the live-status endpoint — football-data.org's free tier caps requests at ~10/minute, and repeated fast page loads plus a manual sync could plausibly collide into a 429. Verified the underlying fetch (`node -e` direct call) and `scripts/sync-matches.ts` both still succeed end-to-end against the live API and MongoDB. Could not reproduce the reported error directly (no browser driven this session) — if it recurs, the toast message now includes the real football-data.org response body, which should pinpoint the cause (expired token vs. rate limit vs. something else).
 
+---
+
+## Milestone 14: Leaderboard filter, light-theme default, prediction-card redesign, auto-lock, Round of 32 countdown, profile menu
+
+Six independent asks bundled by the user into one message. Each is documented separately below.
+
+### 1. Admin hidden from leaderboard
+
+`lib/leaderboard.ts`'s `getLeaderboard()` fetched `prisma.user.findMany()` with no role filter, so the seeded `ADMIN` account (who never predicts) showed up in `/leaderboard` with 0 points. Added `where: { role: "USER" }`. (`lib/leaderboard-money.ts`'s `getAllUsersMoney()` already filtered this way from Milestone 12b — `getLeaderboard()` was the one place that didn't.)
+
+### 2. Light theme is now the default for everyone
+
+`app/layout.tsx`'s `<ThemeProvider>` had `defaultTheme="system" enableSystem`, so any player whose OS/browser was in dark mode landed on dark mode with no explicit choice. Changed to `defaultTheme="light"` with `enableSystem` removed — new sessions always start light; anyone who explicitly picks dark (now via the profile menu, see #6) still gets `next-themes`' normal `localStorage` persistence for that choice.
+
+### 3. My Predictions card redesign
+
+`app/(predictions)/my-predictions/page.tsx`: each prediction card now has three visually distinct rows instead of one run-on sentence — match header (team names + flags + Locked badge), a "Winner" row with the picked team's flag, and a "Scorers" row where each scorer name gets its own ⚽ emoji and wraps independently instead of being comma-joined into one string.
+
+### 4. Auto-lock predictions 30 minutes before kickoff
+
+New `lib/match-lock.ts` — `isMatchLocked(match, now?)` and `AUTO_LOCK_MINUTES_BEFORE_KICKOFF = 30`, the single source of truth for "is this match still predictable." Previously every page independently computed `match.locked || match.kickoffTime.getTime() <= Date.now()` (lock exactly at kickoff); now everything locks 30 minutes earlier via this shared helper:
+- `actions/prediction.ts`'s `submitPrediction` — the actual server-side enforcement (this is what matters; UI checks are just a courtesy) — now rejects with a message naming the 30-minute rule.
+- `app/(fixtures)/fixtures/page.tsx`, `app/(predictions)/predict/[matchId]/page.tsx`, `app/(predictions)/my-predictions/page.tsx` — all switched from inline kickoff-time math to `isMatchLocked()`.
+- User-facing messaging: `/fixtures` has a small explainer line under the header; `/predict/[matchId]` shows the rule both while a match is still open ("get your picks in before then") and after it locks ("locking happens automatically 30 minutes before kickoff").
+
+### 5. First-match countdown (originally attempted as "Round of 32", reverted, redone against Round of 16)
+
+First pass added full Round of 32 support: `sync-matches.ts` did in fact discover a real `LAST_32` stage from football-data.org's 2026 World Cup schedule (48-team format, sits between `GROUP_STAGE` and `LAST_16`) — but the user clarified immediately after that this app's tournament model intentionally starts at Round of 16 and Round of 32 was a mistake in their original ask, not a real requirement. **Fully reverted**, in this order:
+1. Deleted the 16 `ROUND_OF_32` `Match` documents that had already been synced into MongoDB (direct Prisma query, since `prisma db push` isn't meaningful for Mongo enums — validation lives in the generated client, not the DB itself).
+2. Removed `ROUND_OF_32` from the `Round` enum in `prisma/schema.prisma`.
+3. Removed the `LAST_32` mapping from `lib/sync-matches.ts`'s `STAGE_TO_ROUND`.
+4. Reverted `ROUND_ORDER`/`ROUND_LABELS`/`ROUND_BADGE_STYLES` in `app/(fixtures)/fixtures/page.tsx`, `app/(predictions)/my-predictions/page.tsx`, `app/(admin)/admin/predictions/page.tsx`, and the round `z.enum(...)` in `actions/match.ts`.
+5. Deleted `components/RoundOf32Countdown.tsx`.
+6. Re-ran `npx prisma generate` (types updated fine despite the same dev-server file-lock noted below) and `npx tsx scripts/sync-matches.ts WC` — back to 15 matches, confirmed no `ROUND_OF_32` references anywhere (`grep -rn "ROUND_OF_32|RoundOf32"` returned nothing).
+
+The user then confirmed they still wanted the original ask — a countdown to the tournament's first knockout match — just correctly scoped to Round of 16. Re-added as **`components/FirstMatchCountdown.tsx`** (client), functionally identical to the reverted component but targeting the earliest `ROUND_OF_16` kickoff (`matchesByRound.get("ROUND_OF_16")` in `app/(fixtures)/fixtures/page.tsx`, passed down as an ISO string). "Hide once the match starts, never show again": derives `hasStarted` by comparing `now` against the real kickoff `Date` on every tick (reusing `lib/countdown.ts`'s `getCountdown`, same pattern as the existing `CountdownBadge`) — once that timestamp is in the past it stays in the past on every future render/reload, so no extra dismissal state (localStorage, DB flag, etc.) was needed.
+
+**Prisma client regeneration note:** `npx prisma generate` failed both times with `EPERM: operation not permitted, rename ... query_engine-windows.dll.node` because the user's own `next dev` server (already running, PID 2120) had the native engine binary locked. However, Prisma writes the generated TypeScript types (`node_modules/.prisma/client/index.d.ts`) *before* attempting the binary rename, so the `Round` enum change was available to `tsc`/`eslint`/`next build` both times regardless — confirmed clean on all three each time, and confirmed the *existing* (not re-copied) query-engine binary still works correctly by re-running `scripts/sync-matches.ts` (MongoDB is schemaless, so the engine binary doesn't need to know about specific enum string values — validation happens in the generated JS layer, which did update). No action needed unless a *future* schema change involves the binary itself (e.g. a new binary target), in which case the dev server would need to be stopped first.
+
+### 6. Profile dropdown in the header
+
+Replaced the header's separate theme-toggle button + bare "Sign out" form + small username text with a single dropdown:
+- New `components/ProfileMenu.tsx` (client) — a round avatar showing the user's first initial, with their name next to it on `sm+` screens (shown inside the dropdown instead on mobile, where header space is tight). Click opens a `.card`-styled menu with a theme toggle (☀️/🌙, same `next-themes` `useTheme()` as before) and a "Sign out" button.
+- New `actions/auth.ts` → `logout()` server action (wraps `signOut({ redirectTo: "/login" })`) so the client component can submit a `<form action={logout}>` without needing an inline server action closure.
+- Deleted `components/ThemeToggle.tsx` — fully superseded, no longer imported anywhere. (Incidentally, this also removed a pre-existing `react-hooks/set-state-in-effect` lint error that lived in that file — the same hydration-safe "mounted" guard pattern is now needed in `ProfileMenu.tsx` instead, suppressed with an explanatory `eslint-disable-next-line` since it's `next-themes`' standard SSR-safe pattern, not an actual bug.)
+- `components/SiteHeader.tsx` simplified to render `<ProfileMenu name={session.user.name} />` in place of the old three separate pieces.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .` (zero errors — both previously-noted pre-existing errors are now gone: the `ThemeToggle` one via deletion, and the `predict/[matchId]` `Date.now()`-in-render one incidentally fixed by moving that logic into the plain `lib/match-lock.ts` utility function, which isn't subject to the React-purity lint rule), and `npm run build` (all 15 routes) all clean, re-confirmed after the Round of 32 revert. `scripts/sync-matches.ts WC` re-run live against MongoDB and football-data.org after the revert, confirmed back to 15 matches (Round of 16 onward only, no `ROUND_OF_32` anywhere). No browser was driven this session — recommend manually verifying: the profile dropdown opens/closes and click-outside-to-close works, the `FirstMatchCountdown` ticks and disappears once the first Round of 16 match starts, light mode is what a fresh incognito session actually lands on, and the auto-lock fires visibly ~30 minutes before a real kickoff (hard to verify live without waiting for an actual match window).
+
 **Verification:** `npx tsc --noEmit`, `npx eslint .` (same pre-existing unrelated error, none new), `npm run build` all clean; `npx tsx scripts/sync-matches.ts WC` re-run successfully end-to-end against the live API and MongoDB. Manual phone-viewport check of the new `/admin/matches` card layout, and confirmation that the sync error is actually resolved, not done this session — recommend checking the browser toast text next time the sync fails.

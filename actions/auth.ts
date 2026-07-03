@@ -2,7 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { z } from "zod";
-import { signIn } from "@/lib/auth";
+import { signIn, signOut } from "@/lib/auth";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -39,4 +39,8 @@ export async function login(
     }
     throw error;
   }
+}
+
+export async function logout() {
+  await signOut({ redirectTo: "/login" });
 }

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { MatchCard, type MatchCardData } from "@/components/features/matches/MatchCard";
 import { fetchLiveCompetitionMatches, type FootballDataMatch } from "@/lib/football-data";
+import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
+import { FirstMatchCountdown } from "@/components/FirstMatchCountdown";
 import type { Round } from "@prisma/client";
 
 const COMPETITION_CODE = process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC";
@@ -55,9 +57,26 @@ export default async function FixturesPage() {
     matchesByRound.set(match.round, existing);
   }
 
+  const roundOf16Matches = matchesByRound.get("ROUND_OF_16");
+  const firstMatchKickoff = roundOf16Matches?.length
+    ? roundOf16Matches.reduce(
+        (earliest, m) => (m.kickoffTime < earliest ? m.kickoffTime : earliest),
+        roundOf16Matches[0].kickoffTime
+      )
+    : null;
+
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-4 sm:space-y-10 sm:p-6">
       <h1 className="text-2xl font-bold gradient-text">Fixtures</h1>
+
+      {firstMatchKickoff && (
+        <FirstMatchCountdown kickoffTime={firstMatchKickoff.toISOString()} />
+      )}
+
+      <p className="text-xs text-gray-500">
+        Predictions lock automatically {AUTO_LOCK_MINUTES_BEFORE_KICKOFF} minutes before each
+        match&apos;s kickoff.
+      </p>
 
       {matches.length === 0 && (
         <p className="text-sm text-gray-500">
@@ -88,7 +107,7 @@ export default async function FixturesPage() {
                 const cardData: MatchCardData = {
                   id: match.id,
                   kickoffTime: match.kickoffTime,
-                  locked: match.locked || match.kickoffTime.getTime() <= Date.now(),
+                  locked: isMatchLocked(match),
                   homeTeam: { name: match.homeTeam.name, flag: match.homeTeam.flag },
                   awayTeam: { name: match.awayTeam.name, flag: match.awayTeam.flag },
                   hasPrediction: match.predictions.length > 0,
