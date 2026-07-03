@@ -56,6 +56,10 @@ export function PredictionForm({
     }
 
     const scorerPlayerIds = scorers.filter(Boolean);
+    if (scorerPlayerIds.length < 2) {
+      setError("Please pick at least 2 goal scorers.");
+      return;
+    }
     if (new Set(scorerPlayerIds).size !== scorerPlayerIds.length) {
       setError("Scorer picks must be distinct players.");
       return;
@@ -104,7 +108,7 @@ export function PredictionForm({
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Goal scorers (up to 3)</legend>
+        <legend className="text-sm font-medium">Goal scorers (pick at least 2, up to 3)</legend>
         {[0, 1, 2].map((index) => (
           <select
             key={index}
@@ -112,7 +116,7 @@ export function PredictionForm({
             onChange={(event) => handleScorerChange(index, event.target.value)}
             className="input-pill w-full"
           >
-            <option value="">— None —</option>
+            <option value="">Scorer {index + 1}...</option>
             {allPlayers.map((player) => (
               <option key={player.id} value={player.id}>
                 {player.name}
@@ -128,7 +132,11 @@ export function PredictionForm({
         </p>
       )}
 
-      <button type="submit" disabled={isPending} className="btn btn-primary w-full py-2.5">
+      <button
+        type="submit"
+        disabled={isPending || !winnerTeamId || scorers.filter(Boolean).length < 2}
+        className="btn btn-primary w-full py-2.5"
+      >
         {isPending ? "Saving..." : initialWinnerTeamId ? "Update prediction" : "Save prediction"}
       </button>
     </form>

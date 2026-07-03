@@ -9,7 +9,10 @@ import { isMatchLocked } from "@/lib/match-lock";
 const predictionSchema = z.object({
   matchId: z.string().min(1),
   winnerTeamId: z.string().min(1),
-  scorerPlayerIds: z.array(z.string().min(1)).max(3).default([]),
+  scorerPlayerIds: z
+    .array(z.string().min(1))
+    .min(2, "Pick at least 2 goal scorers.")
+    .max(3, "Pick at most 3 goal scorers."),
 });
 
 export type PredictionInput = z.infer<typeof predictionSchema>;
@@ -45,18 +48,16 @@ export async function submitPrediction(input: PredictionInput) {
     throw new Error("Winner pick must be one of the two teams in this match.");
   }
 
-  if (data.scorerPlayerIds.length > 0) {
-    const validPlayers = await prisma.player.findMany({
-      where: {
-        id: { in: data.scorerPlayerIds },
-        teamId: { in: [match.homeTeamId, match.awayTeamId] },
-      },
-      select: { id: true },
-    });
+  const validPlayers = await prisma.player.findMany({
+    where: {
+      id: { in: data.scorerPlayerIds },
+      teamId: { in: [match.homeTeamId, match.awayTeamId] },
+    },
+    select: { id: true },
+  });
 
-    if (validPlayers.length !== data.scorerPlayerIds.length) {
-      throw new Error("Scorer picks must belong to one of the two teams in this match.");
-    }
+  if (validPlayers.length !== data.scorerPlayerIds.length) {
+    throw new Error("Scorer picks must belong to one of the two teams in this match.");
   }
 
   const prediction = await prisma.$transaction(async (tx) => {
@@ -74,14 +75,12 @@ export async function submitPrediction(input: PredictionInput) {
       where: { predictionId: upserted.id },
     });
 
-    if (data.scorerPlayerIds.length > 0) {
-      await tx.predictionScorer.createMany({
-        data: data.scorerPlayerIds.map((playerId) => ({
-          predictionId: upserted.id,
-          playerId,
-        })),
-      });
-    }
+    await tx.predictionScorer.createMany({
+      data: data.scorerPlayerIds.map((playerId) => ({
+        predictionId: upserted.id,
+        playerId,
+      })),
+    });
 
     return upserted;
   });

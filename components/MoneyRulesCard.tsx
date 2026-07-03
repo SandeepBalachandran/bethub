@@ -37,8 +37,8 @@ export function MoneyRulesCard({
         </li>
       </ul>
       <p className="mt-3 text-xs text-muted-foreground">
-        You can pick up to 3 goal scorers per match. Each pick is scored on its own — there&apos;s
-        no shared pool. E.g. 2 correct + 1 wrong ={" "}
+        You must pick at least 2 goal scorers per match (up to 3). Each pick is scored on its own
+        — there&apos;s no shared pool. E.g. 2 correct + 1 wrong ={" "}
         {formatMoney(2 * moneyConfig.moneyPerCorrectScorer + moneyConfig.moneyPerIncorrectScorer)}
         , not one combined amount.
       </p>
