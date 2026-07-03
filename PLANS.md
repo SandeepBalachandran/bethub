@@ -492,16 +492,19 @@ All money amounts are stored in `.env` and loaded via `lib/money-config.ts` on a
 |------------|---------|---------|
 | `CURRENCY_SYMBOL` | `₹` | Display symbol for all money amounts |
 | `MONEY_PER_CORRECT_WINNER` | `30` | Money earned for correctly predicting the match winner |
+| `MONEY_PER_INCORRECT_WINNER` | `-30` | Money lost for incorrectly predicting the match winner |
 | `MONEY_PER_CORRECT_SCORER` | `10` | Money earned for each correctly predicted goal scorer |
-| `MONEY_PER_INCORRECT_SCORER` | `-5` | Money lost for each incorrectly predicted goal scorer |
+| `MONEY_PER_INCORRECT_SCORER` | `-10` | Money lost for each incorrectly predicted goal scorer |
 
 **Derived limits** (computed from the above):
 - Max money per match: `MONEY_PER_CORRECT_WINNER + (3 × MONEY_PER_CORRECT_SCORER)` = `30 + 30 = 60` (with defaults)
-- Max loss per match: `3 × MONEY_PER_INCORRECT_SCORER` = `3 × -5 = -15` (with defaults)
+- Max loss per match: `MONEY_PER_INCORRECT_WINNER + (3 × MONEY_PER_INCORRECT_SCORER)` = `-30 + -30 = -60` (with defaults)
 
-To change scoring (e.g., tripling stakes to ₹90/₹30/-₹15):
-1. Edit `.env`: `MONEY_PER_CORRECT_WINNER=90 MONEY_PER_CORRECT_SCORER=30 MONEY_PER_INCORRECT_SCORER=-15`
+To change scoring (e.g., tripling stakes to ₹90/-₹90/₹30/-₹30):
+1. Edit `.env`: `MONEY_PER_CORRECT_WINNER=90 MONEY_PER_INCORRECT_WINNER=-90 MONEY_PER_CORRECT_SCORER=30 MONEY_PER_INCORRECT_SCORER=-30`
 2. Restart the app.
+
+**2026-07-03 update:** originally an incorrect winner pick earned `0` (no penalty, winner-only downside was opportunity cost). User asked to make the winner pick symmetric-risk like the scorer picks: `MONEY_PER_INCORRECT_WINNER` added (default `-30`, mirroring `MONEY_PER_CORRECT_WINNER`), and `MONEY_PER_INCORRECT_SCORER` default changed from `-5` to `-10` (mirroring `MONEY_PER_CORRECT_SCORER`). `lib/money.ts`'s `calculateMatchMoney` now applies `moneyPerIncorrectWinner` whenever a finished match's prediction picked the wrong team (previously fell through to `0`). `maxLossPerMatch` in `lib/money-config.ts` now includes the winner term. `components/MoneyRulesCard.tsx` updated to display the new incorrect-winner rule.
 3. All dashboards and calculations automatically use the new amounts — no code changes.
 
 ---

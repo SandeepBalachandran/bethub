@@ -13,6 +13,12 @@ export function MoneyRulesCard() {
           <span>Correct match winner</span>
           <span className="font-bold text-success">+{formatMoney(moneyConfig.moneyPerCorrectWinner)}</span>
         </li>
+        <li className="flex items-center justify-between gap-3 rounded-xl bg-danger/5 px-3 py-2">
+          <span>Incorrect match winner</span>
+          <span className="font-bold text-danger">
+            {formatMoney(moneyConfig.moneyPerIncorrectWinner)}
+          </span>
+        </li>
         <li className="flex items-center justify-between gap-3 rounded-xl bg-success/5 px-3 py-2">
           <span>Each correct goal scorer (up to 3)</span>
           <span className="font-bold text-success">
@@ -28,9 +34,8 @@ export function MoneyRulesCard() {
       </ul>
       <p className="mt-3 text-xs text-muted-foreground">
         Best case per match: {formatMoney(moneyConfig.maxMoneyPerMatch)} (correct winner + all 3
-        scorers correct). Worst case per match: {formatMoney(moneyConfig.maxLossPerMatch)} (a
-        wrong winner earns {formatMoney(0)} — the loss comes entirely from wrong scorer picks, so
-        all 3 wrong is the floor). Skipping scorer picks means zero scorer risk.
+        scorers correct). Worst case per match: {formatMoney(moneyConfig.maxLossPerMatch)} (wrong
+        winner + all 3 scorer picks wrong).
       </p>
     </details>
   );

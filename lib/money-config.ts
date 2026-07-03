@@ -1,6 +1,7 @@
 export interface MoneyConfig {
   currencySymbol: string;
   moneyPerCorrectWinner: number;
+  moneyPerIncorrectWinner: number;
   moneyPerCorrectScorer: number;
   moneyPerIncorrectScorer: number;
   maxMoneyPerMatch: number;
@@ -12,17 +13,25 @@ function loadMoneyConfig(): MoneyConfig {
   const moneyPerCorrectWinner = parseInt(
     process.env.MONEY_PER_CORRECT_WINNER || "30"
   );
+  const moneyPerIncorrectWinner = parseInt(
+    process.env.MONEY_PER_INCORRECT_WINNER || "-30"
+  );
   const moneyPerCorrectScorer = parseInt(
     process.env.MONEY_PER_CORRECT_SCORER || "10"
   );
   const moneyPerIncorrectScorer = parseInt(
-    process.env.MONEY_PER_INCORRECT_SCORER || "-5"
+    process.env.MONEY_PER_INCORRECT_SCORER || "-10"
   );
 
   // Validation
   if (moneyPerCorrectWinner < 0) {
     throw new Error(
       `Invalid MONEY_PER_CORRECT_WINNER: ${moneyPerCorrectWinner} (must be >= 0)`
+    );
+  }
+  if (moneyPerIncorrectWinner > 0) {
+    throw new Error(
+      `Invalid MONEY_PER_INCORRECT_WINNER: ${moneyPerIncorrectWinner} (must be <= 0)`
     );
   }
   if (moneyPerCorrectScorer < 0) {
@@ -38,11 +47,12 @@ function loadMoneyConfig(): MoneyConfig {
 
   const maxMoneyPerMatch =
     moneyPerCorrectWinner + 3 * moneyPerCorrectScorer;
-  const maxLossPerMatch = 3 * moneyPerIncorrectScorer;
+  const maxLossPerMatch = moneyPerIncorrectWinner + 3 * moneyPerIncorrectScorer;
 
   return {
     currencySymbol,
     moneyPerCorrectWinner,
+    moneyPerIncorrectWinner,
     moneyPerCorrectScorer,
     moneyPerIncorrectScorer,
     maxMoneyPerMatch,

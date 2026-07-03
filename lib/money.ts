@@ -18,10 +18,13 @@ export function calculateMatchMoney(
   actualScorerPlayerIds: string[],
   config: MoneyConfig
 ): MatchMoney {
-  const winnerMoney =
-    match.winnerTeamId && prediction.winnerTeamId === match.winnerTeamId
-      ? config.moneyPerCorrectWinner
-      : 0;
+  let winnerMoney = 0;
+  if (match.winnerTeamId) {
+    winnerMoney =
+      prediction.winnerTeamId === match.winnerTeamId
+        ? config.moneyPerCorrectWinner
+        : config.moneyPerIncorrectWinner;
+  }
 
   const scorerMoney = prediction.scorerPlayerIds.reduce((sum, playerId) => {
     return sum +
