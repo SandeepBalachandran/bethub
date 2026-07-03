@@ -22,6 +22,7 @@ export default async function AdminUsersPage() {
               <th className="py-2.5 pr-2">Email</th>
               <th className="py-2.5 pr-2">Role</th>
               <th className="py-2.5 pr-2">Status</th>
+              <th className="py-2.5 pr-2">UPI ID</th>
               <th className="py-2.5 pr-3">Actions</th>
             </tr>
           </thead>
@@ -36,6 +37,7 @@ export default async function AdminUsersPage() {
                   role: user.role,
                   active: user.active,
                   isSelf: user.id === admin.id,
+                  upiId: user.upiId,
                 }}
               />
             ))}

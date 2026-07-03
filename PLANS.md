@@ -640,3 +640,16 @@ User asked whether players should see each other's picks before or after a match
 - New "Everyone's predictions" section, gated on `isMatchLocked(match)` (the same 30-minutes-before-kickoff helper from Milestone 14 §4) — shows every other player's winner pick (with flag) and scorer picks (⚽ emoji each), same visual pattern as the "My prediction"/`my-predictions` cards. Before lock, a one-line placeholder explains picks unlock 30 minutes before kickoff instead of showing anything.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean (all 15 routes). No browser driven this session — recommend confirming the reveal actually flips at the 30-minute mark and that a currently-open match correctly hides others' picks until then.
+
+### 8. UPI settlement links (deliberately not a payment gateway)
+
+User asked whether to integrate a real payment gateway/UPI collection flow. Recommended against it — for a private ≤5-person group with ₹30/₹5 stakes, a real gateway pulls in KYC/TDS/GST/gambling-law exposure disproportionate to the use case, and the app already computes exact balances; the only missing piece was a shortcut to the manual UPI transfer people already do. Landed on a **UPI deep-link only** — no money, tokens, or webhooks ever touch this app.
+
+- `prisma/schema.prisma` — added `upiId String?` to `User`.
+- `actions/user.ts` — new `setUpiId(userId, { upiId })`, admin-only, validates a basic `name@bank` UPI ID shape (or empty string to clear it).
+- `components/features/admin/AdminUserRow.tsx` / `app/(admin)/admin/users/page.tsx` — new "UPI ID" column, same edit+Save pattern as the existing password-reset field.
+- `lib/leaderboard-money.ts` — `getAllUsersMoney()`/`UserMoneyRow` now also returns `upiId`.
+- New `lib/upi.ts` — `buildUpiPayLink()`, builds a standard `upi://pay?pa=...&pn=...&am=...&cu=INR` intent URL (opens the payer's own UPI app pre-filled — this app never sees or handles the transaction).
+- `app/(admin)/admin/money/page.tsx` — new "Settle" column: when a player's `currentBalance > 0` (they're owed money) and they have a UPI ID on file, shows a "Pay ₹X" button linking to their UPI intent; otherwise shows "No UPI ID on file" or `—`.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean (same Prisma client-regen file-lock note as before — types updated fine despite the binary rename failing). `upi://` deep links only actually open an app on a phone with a UPI app installed — not testable from this desktop session; recommend clicking "Pay" on a real device once a player has a UPI ID saved and a positive balance.

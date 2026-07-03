@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/authz";
 import { getAllUsersMoney } from "@/lib/leaderboard-money";
 import { formatMoney } from "@/lib/format-money";
 import { MoneyRulesCard } from "@/components/MoneyRulesCard";
+import { buildUpiPayLink } from "@/lib/upi";
 
 export const metadata = {
   title: "Admin Money Dashboard - Bettman",
@@ -55,7 +56,8 @@ export default async function AdminMoneyPage() {
                 <th className="py-2.5 pr-2">Money Lost</th>
                 <th className="py-2.5 pr-2">Current Balance</th>
                 <th className="py-2.5 pr-2">Pending Max Win</th>
-                <th className="py-2.5 pr-3">Pending Max Loss</th>
+                <th className="py-2.5 pr-2">Pending Max Loss</th>
+                <th className="py-2.5 pr-3">Settle</th>
               </tr>
             </thead>
             <tbody>
@@ -81,8 +83,27 @@ export default async function AdminMoneyPage() {
                   <td className="py-2 pr-2" data-label="Pending Max Win">
                     {formatMoney(player.pendingExposure.maxWin)}
                   </td>
-                  <td className="py-2 pr-3" data-label="Pending Max Loss">
+                  <td className="py-2 pr-2" data-label="Pending Max Loss">
                     {formatMoney(player.pendingExposure.maxLoss)}
+                  </td>
+                  <td className="py-2 pr-3" data-label="Settle">
+                    {player.currentBalance > 0 && player.upiId ? (
+                      <a
+                        href={buildUpiPayLink({
+                          upiId: player.upiId,
+                          payeeName: player.name,
+                          amount: player.currentBalance,
+                          note: "Bettman settlement",
+                        })}
+                        className="btn btn-primary"
+                      >
+                        Pay {formatMoney(player.currentBalance)}
+                      </a>
+                    ) : player.currentBalance > 0 ? (
+                      <span className="text-xs text-gray-400">No UPI ID on file</span>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

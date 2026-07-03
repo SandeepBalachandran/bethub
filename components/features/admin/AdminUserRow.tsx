@@ -3,7 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { deactivateUser, deleteUser, reactivateUser, resetPassword } from "@/actions/user";
+import {
+  deactivateUser,
+  deleteUser,
+  reactivateUser,
+  resetPassword,
+  setUpiId,
+} from "@/actions/user";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export type AdminUserRowData = {
@@ -13,12 +19,14 @@ export type AdminUserRowData = {
   role: string;
   active: boolean;
   isSelf: boolean;
+  upiId: string | null;
 };
 
 export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [newPassword, setNewPassword] = useState("");
+  const [upiId, setUpiIdValue] = useState(user.upiId ?? "");
 
   function run(action: () => Promise<unknown>, successMessage: string) {
     startTransition(async () => {
@@ -46,6 +54,25 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
       </td>
       <td className="py-2 pr-2 text-xs" data-label="Status">
         {user.active ? "Active" : "Deactivated"}
+      </td>
+      <td className="py-2 pr-2" data-label="UPI ID">
+        <div className="flex flex-wrap justify-end gap-1 sm:justify-start">
+          <input
+            type="text"
+            placeholder="name@bank"
+            value={upiId}
+            onChange={(e) => setUpiIdValue(e.target.value)}
+            className="input-pill w-36"
+          />
+          <button
+            type="button"
+            disabled={isPending || upiId === (user.upiId ?? "")}
+            onClick={() => run(() => setUpiId(user.id, { upiId }), "UPI ID saved")}
+            className="btn btn-outline"
+          >
+            Save
+          </button>
+        </div>
       </td>
       <td className="py-2 pr-2" data-label="Actions">
         <div className="flex flex-wrap justify-end gap-1 sm:justify-start">
