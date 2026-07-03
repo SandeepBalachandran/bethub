@@ -2,9 +2,9 @@ import { Skeleton } from "@/components/Skeleton";
 
 export default function MoneyLoading() {
   return (
-    <div className="space-y-6">
+    <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <div>
-        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-8 w-56" />
         <Skeleton className="mt-2 h-4 w-48" />
       </div>
 
@@ -56,6 +56,6 @@ export default function MoneyLoading() {
           ))}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

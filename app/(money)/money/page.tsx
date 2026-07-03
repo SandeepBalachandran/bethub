@@ -82,10 +82,10 @@ export default async function MoneyPage() {
       : 0;
 
   return (
-    <div className="space-y-6">
+    <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="gradient-text text-3xl font-bold">Money Dashboard</h1>
-        <p className="text-muted-foreground">Track your financial performance</p>
+        <h1 className="gradient-text text-2xl font-bold">Money Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Track your financial performance</p>
       </div>
 
       <MoneyRulesCard />
@@ -182,6 +182,6 @@ export default async function MoneyPage() {
           </p>
         </div>
       )}
-    </div>
+    </main>
   );
 }
