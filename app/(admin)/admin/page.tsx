@@ -9,7 +9,7 @@ import { SendNotificationForm } from "@/components/features/admin/SendNotificati
 export default async function AdminDashboardPage() {
   await requireAdmin();
 
-  const [userCount, matchCount, finishedCount, predictionCount, leaderboard, playersMoney] =
+  const [userCount, matchCount, finishedCount, predictionCount, leaderboard, playersMoney, players] =
     await Promise.all([
       prisma.user.count(),
       prisma.match.count(),
@@ -17,6 +17,11 @@ export default async function AdminDashboardPage() {
       prisma.prediction.count(),
       getLeaderboard(),
       getAllUsersMoney(),
+      prisma.user.findMany({
+        where: { role: "USER", active: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
     ]);
 
   const tournamentNet = playersMoney.reduce((sum, p) => sum + p.currentBalance, 0);
@@ -66,7 +71,7 @@ export default async function AdminDashboardPage() {
         </Link>
       </div>
 
-      <SendNotificationForm />
+      <SendNotificationForm users={players} />
 
       <section className="card space-y-2 p-4">
         <h2 className="text-lg font-medium">Leaderboard</h2>

@@ -37,13 +37,16 @@ export async function unsubscribeFromPush(endpoint: string) {
 const adminNotificationSchema = z.object({
   title: z.string().trim().min(1).max(80),
   body: z.string().trim().min(1).max(200),
+  userId: z.string().min(1).optional(),
 });
 
 export async function sendAdminNotification(input: z.infer<typeof adminNotificationSchema>) {
   await requireAdmin();
   const data = adminNotificationSchema.parse(input);
 
-  const result = await sendPushToAll({ title: data.title, body: data.body });
+  const result = data.userId
+    ? await sendPushToUser(data.userId, { title: data.title, body: data.body })
+    : await sendPushToAll({ title: data.title, body: data.body });
   return { recipientCount: result.sent, errors: result.errors };
 }
 
@@ -70,7 +73,7 @@ export async function remindMissingPredictions(matchId: string) {
     missingUsers.map((u) =>
       sendPushToUser(u.id, {
         title: "Don't forget to predict!",
-        body: `${matchName} — get your picks in before it locks.`,
+        body: `${matchName} : get your picks in before it locks.`,
         url: `/predict/${matchId}`,
       })
     )

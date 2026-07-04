@@ -44,7 +44,7 @@ export default async function MyPredictionsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-8 p-4 sm:p-6">
+    <main className="mx-auto max-w-4xl space-y-8 p-4 sm:space-y-10 sm:p-6">
       <h1 className="text-2xl font-bold gradient-text">My Predictions</h1>
 
       {predictions.length === 0 && (
@@ -71,7 +71,7 @@ export default async function MyPredictionsPage() {
                 {ROUND_LABELS[round]}
               </span>
             </h2>
-            <div className="space-y-2">
+            <div className="w-full space-y-2">
               {roundPredictions.map((prediction) => {
                 const isLocked = isMatchLocked(prediction.match);
 
@@ -79,7 +79,7 @@ export default async function MyPredictionsPage() {
                   <Link
                     key={prediction.id}
                     href={`/match/${prediction.match.id}`}
-                    className="card card-interactive block space-y-2 border-l-4 border-secondary p-3 text-sm"
+                    className="card card-interactive block w-full space-y-2 border-l-4 border-secondary p-3 text-sm"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="flex min-w-0 flex-wrap items-center gap-2 font-medium">
