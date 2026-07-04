@@ -16,6 +16,9 @@ export function SendNotificationForm() {
       try {
         const result = await sendAdminNotification({ title, body });
         toast.success(`Sent to ${result.recipientCount} device(s)`);
+        if (result.errors.length > 0) {
+          toast.error(`${result.errors.length} failed: ${result.errors[0]}`);
+        }
         setTitle("");
         setBody("");
       } catch (error) {

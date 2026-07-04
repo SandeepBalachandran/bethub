@@ -43,8 +43,8 @@ export async function sendAdminNotification(input: z.infer<typeof adminNotificat
   await requireAdmin();
   const data = adminNotificationSchema.parse(input);
 
-  const recipientCount = await sendPushToAll({ title: data.title, body: data.body });
-  return { recipientCount };
+  const result = await sendPushToAll({ title: data.title, body: data.body });
+  return { recipientCount: result.sent, errors: result.errors };
 }
 
 export async function remindMissingPredictions(matchId: string) {
@@ -66,7 +66,7 @@ export async function remindMissingPredictions(matchId: string) {
   });
 
   const matchName = `${match.homeTeam.name} vs ${match.awayTeam.name}`;
-  const counts = await Promise.all(
+  const results = await Promise.all(
     missingUsers.map((u) =>
       sendPushToUser(u.id, {
         title: "Don't forget to predict!",
@@ -76,5 +76,9 @@ export async function remindMissingPredictions(matchId: string) {
     )
   );
 
-  return { remindedUsers: missingUsers.length, recipientDevices: counts.reduce((a, b) => a + b, 0) };
+  return {
+    remindedUsers: missingUsers.length,
+    recipientDevices: results.reduce((a, r) => a + r.sent, 0),
+    errors: results.flatMap((r) => r.errors),
+  };
 }

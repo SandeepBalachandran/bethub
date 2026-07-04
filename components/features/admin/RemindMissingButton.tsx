@@ -16,6 +16,9 @@ export function RemindMissingButton({ matchId }: { readonly matchId: string }) {
             ? "Everyone has already predicted this match."
             : `Reminded ${result.remindedUsers} player(s) (${result.recipientDevices} device(s)).`
         );
+        if (result.errors.length > 0) {
+          toast.error(`${result.errors.length} failed: ${result.errors[0]}`);
+        }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to send reminder.");
       }

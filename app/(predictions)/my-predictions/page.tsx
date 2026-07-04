@@ -81,13 +81,15 @@ export default async function MyPredictionsPage() {
                     href={`/match/${prediction.match.id}`}
                     className="card card-interactive block space-y-2 border-l-4 border-secondary p-3 text-sm"
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-2 font-medium">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="flex min-w-0 flex-wrap items-center gap-2 font-medium">
                         <TeamFlag
                           flag={prediction.match.homeTeam.flag}
                           name={prediction.match.homeTeam.name}
                         />
-                        {prediction.match.homeTeam.name} vs {prediction.match.awayTeam.name}
+                        <span className="wrap-break-word">
+                          {prediction.match.homeTeam.name} vs {prediction.match.awayTeam.name}
+                        </span>
                         <TeamFlag
                           flag={prediction.match.awayTeam.flag}
                           name={prediction.match.awayTeam.name}
