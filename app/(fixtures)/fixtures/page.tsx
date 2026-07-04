@@ -4,6 +4,7 @@ import { MatchCard, type MatchCardData } from "@/components/features/matches/Mat
 import { fetchLiveCompetitionMatches, type FootballDataMatch } from "@/lib/football-data";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
 import { FirstMatchCountdown } from "@/components/FirstMatchCountdown";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import type { Round } from "@prisma/client";
 
 const COMPETITION_CODE = process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC";
@@ -68,6 +69,8 @@ export default async function FixturesPage() {
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-4 sm:space-y-10 sm:p-6">
       <h1 className="text-2xl font-bold gradient-text">Fixtures</h1>
+
+      <PushNotificationPrompt />
 
       {firstMatchKickoff && (
         <FirstMatchCountdown kickoffTime={firstMatchKickoff.toISOString()} />

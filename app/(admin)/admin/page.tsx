@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getLeaderboard } from "@/lib/leaderboard";
 import { getAllUsersMoney } from "@/lib/leaderboard-money";
 import { formatMoney } from "@/lib/format-money";
+import { SendNotificationForm } from "@/components/features/admin/SendNotificationForm";
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
@@ -64,6 +65,8 @@ export default async function AdminDashboardPage() {
           <StatCard label="Payments" value={formatMoney(tournamentNet)} color="success" />
         </Link>
       </div>
+
+      <SendNotificationForm />
 
       <section className="card space-y-2 p-4">
         <h2 className="text-lg font-medium">Leaderboard</h2>

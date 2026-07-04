@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authz";
 import { syncMatchesFromLiveApi, type SyncMatchesResult } from "@/lib/sync-matches";
+import { sendPushToAll } from "@/lib/push";
 
 const matchObjectSchema = z.object({
   round: z.enum(["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"]),
@@ -87,7 +88,10 @@ export async function finishMatch(
   await requireAdmin();
   const data = finishMatchSchema.parse(input);
 
-  const match = await prisma.match.findUnique({ where: { id: matchId } });
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    include: { homeTeam: true, awayTeam: true },
+  });
   if (!match) {
     throw new Error("Match not found.");
   }
@@ -132,6 +136,14 @@ export async function finishMatch(
   revalidatePath(`/match/${matchId}`);
   revalidatePath("/leaderboard");
   revalidatePath("/admin");
+
+  const winnerName =
+    data.winnerTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name;
+  await sendPushToAll({
+    title: "Match finished!",
+    body: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${winnerName} won. Check your points and money.`,
+    url: `/match/${matchId}`,
+  }).catch((error) => console.error("Failed to send match-finished push:", error));
 }
 
 export async function syncMatchesFromLiveApiAction(

@@ -653,3 +653,28 @@ User asked whether to integrate a real payment gateway/UPI collection flow. Reco
 - `app/(admin)/admin/money/page.tsx` — new "Settle" column: when a player's `currentBalance > 0` (they're owed money) and they have a UPI ID on file, shows a "Pay ₹X" button linking to their UPI intent; otherwise shows "No UPI ID on file" or `—`.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean (same Prisma client-regen file-lock note as before — types updated fine despite the binary rename failing). `upi://` deep links only actually open an app on a phone with a UPI app installed — not testable from this desktop session; recommend clicking "Pay" on a real device once a player has a UPI ID saved and a positive balance.
+
+---
+
+## Milestone 15: Mandatory-scorer tweak, and web push notifications (manual admin trigger + auto match-finished)
+
+### Scorer picks: 3 mandatory → at least 2, up to 3
+
+User first asked to make all 3 scorer picks mandatory, then corrected to "at least 2 should be entered." Final state in `actions/prediction.ts`: `scorerPlayerIds: z.array(z.string().min(1)).min(2, "Pick at least 2 goal scorers.").max(3, "Pick at most 3 goal scorers.")` (previously `.max(3).default([])`, fully optional). `components/features/predictions/PredictionForm.tsx` — submit button now disabled until winner + at least 2 distinct scorers are picked; client-side error messages match. `components/MoneyRulesCard.tsx` copy updated ("must pick at least 2 goal scorers per match (up to 3)").
+
+### Web push notifications
+
+Discussed as a design question first (signup system → rejected as unnecessary for a closed 5-person group; push notifications → recommended, since the group is confirmed all-Android, avoiding iOS Safari's PWA-only Web Push limitation). Scoped to **event-driven triggers only** — no scheduled/cron-based "lock in 30 min" reminder, since that needs a scheduler and the user opted to send that manually instead when needed.
+
+- **VAPID keys** generated (`npx web-push generate-vapid-keys`) and added to `.env`/`.env.example` as `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
+- **`prisma/schema.prisma`** — new `PushSubscription` model (`userId`, unique `endpoint`, `p256dh`, `auth`), `User.pushSubscriptions` relation.
+- **`lib/push.ts`** — `sendPushToAll(payload)` / `sendPushToUser(userId, payload)`, using the `web-push` npm package configured with the VAPID keys at module load. Auto-deletes a subscription from the DB if the push provider returns 404/410 (uninstalled app, revoked permission, etc.) instead of failing loudly.
+- **`public/sw.js`** — service worker: shows the notification on `push`, focuses/opens the app to the payload's `url` on `notificationclick`.
+- **`actions/push.ts`** — `subscribeToPush`/`unsubscribeFromPush` (any authenticated user, upserts/deletes by `endpoint`), `sendAdminNotification({ title, body })` (admin-only, calls `sendPushToAll`, returns the recipient device count).
+- **`components/PushNotificationPrompt.tsx`** — client component on `/fixtures`; checks `serviceWorker`/`PushManager`/`Notification.permission` support (browser-only, so the check runs in a `useEffect` — same hydration-safe "unknown until mounted" pattern as `ProfileMenu`, and the `react-hooks/set-state-in-effect` lint warning on the first branch is suppressed the same way). Renders nothing if unsupported or already granted; otherwise an "Enable" button that requests permission, registers `/sw.js`, subscribes via `PushManager`, and saves the subscription server-side.
+- **`components/features/admin/SendNotificationForm.tsx`** — the user's specific ask: a title+message form on `/admin` calling `sendAdminNotification`, toasts how many devices received it.
+- **`actions/match.ts`**'s `finishMatch` — now automatically sends a push ("Match finished! X vs Y — Z won...") to every subscribed device right after a match is marked finished. Wrapped in `.catch()` so a push-delivery failure can never block saving the actual match result/points/money calculation.
+
+**Prisma client regeneration note:** unlike the earlier `upiId`/Round-of-32 schema changes (which hit `EPERM` because the user's `next dev` was running and holding the query-engine binary open), this time the user fully stopped the dev server first, and `npx prisma generate` completed cleanly with no error.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` (all 15 routes) all clean. Not verified this session (no browser/phone driven): the actual permission prompt UX, whether a real push notification is received and tapped correctly on an Android device, and whether `finishMatch`'s push fires without delaying the UI. Recommend testing end-to-end on a real phone: enable notifications from `/fixtures`, then have an admin finish a match and confirm the push arrives.
