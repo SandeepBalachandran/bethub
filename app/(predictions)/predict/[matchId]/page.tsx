@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/authz";
 import { PredictionForm } from "@/components/features/predictions/PredictionForm";
 import { TeamFlag } from "@/components/TeamFlag";
 import { MoneyRulesCard } from "@/components/MoneyRulesCard";
+import { LocalDateTime } from "@/components/LocalDateTime";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
 
 export default async function PredictPage({
@@ -43,7 +44,7 @@ export default async function PredictPage({
           <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={24} />
         </h1>
         <p className="mt-1 text-center text-xs text-white/80">
-          Kickoff: {match.kickoffTime.toLocaleString()}
+          Kickoff: <LocalDateTime date={match.kickoffTime.toISOString()} />
         </p>
       </div>
 

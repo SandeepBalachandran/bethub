@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
 import { formatMoney } from "@/lib/format-money";
@@ -17,6 +18,37 @@ const AVATAR_COLORS = [
 function avatarColorFor(userId: string) {
   const hash = [...userId].reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
+/** Deterministic cartoon avatar per user — same seed always renders the same character. */
+function CartoonAvatar({ userId, name }: { readonly userId: string; readonly name: string }) {
+  const [failed, setFailed] = useState(true);
+  const initials = name.slice(0, 2).toUpperCase();
+
+  if (failed) {
+    return (
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColorFor(
+          userId
+        )}`}
+      >
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(initials+'male'
+      )}`}
+      alt=""
+      width={36}
+      height={36}
+      className="h-9 w-9 shrink-0 rounded-full bg-gray-100 object-cover dark:bg-white/10"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 export function LeaderboardRow({
@@ -38,7 +70,6 @@ export function LeaderboardRow({
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
   const medal = MEDALS[rank - 1];
-  const initials = entry.name.slice(0, 2).toUpperCase();
 
   return (
     <motion.div
@@ -62,13 +93,7 @@ export function LeaderboardRow({
         )}
       </div>
 
-      <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColorFor(
-          entry.userId
-        )}`}
-      >
-        {initials}
-      </div>
+      <CartoonAvatar userId={entry.userId} name={entry.name} />
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">

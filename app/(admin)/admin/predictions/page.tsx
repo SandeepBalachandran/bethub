@@ -2,7 +2,9 @@ import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { LocalDateTime } from "@/components/LocalDateTime";
 import { RemindMissingButton } from "@/components/features/admin/RemindMissingButton";
+import { isMatchLocked } from "@/lib/match-lock";
 import type { Round } from "@prisma/client";
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
@@ -77,6 +79,7 @@ export default async function AdminPredictionsPage() {
               {roundMatches.map((match) => {
                 const predictedUserIds = new Set(match.predictions.map((p) => p.userId));
                 const missingUsers = allUsers.filter((u) => !predictedUserIds.has(u.id));
+                const locked = isMatchLocked(match);
 
                 return (
                   <div key={match.id} className="card p-3">
@@ -85,7 +88,7 @@ export default async function AdminPredictionsPage() {
                       {match.homeTeam.name} vs {match.awayTeam.name}
                       <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={18} />
                       <span className="ml-auto text-xs font-normal text-gray-400">
-                        {match.kickoffTime.toLocaleString()}
+                        <LocalDateTime date={match.kickoffTime.toISOString()} />
                       </span>
                     </div>
 
@@ -129,7 +132,7 @@ export default async function AdminPredictionsPage() {
                         <p className="text-xs text-gray-400">
                           Not yet predicted: {missingUsers.map((u) => u.name).join(", ")}
                         </p>
-                        <RemindMissingButton matchId={match.id} />
+                        {!locked && <RemindMissingButton matchId={match.id} />}
                       </div>
                     )}
                   </div>

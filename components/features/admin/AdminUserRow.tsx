@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Save, KeyRound, Ban, CheckCircle2, Trash2 } from "lucide-react";
 import {
   deactivateUser,
   deleteUser,
@@ -55,33 +56,31 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
       <td className="py-2 pr-2 text-xs" data-label="Status">
         {user.active ? "Active" : "Deactivated"}
       </td>
-      <td className="py-2 pr-2" data-label="UPI ID">
-        <div className="flex flex-wrap justify-end gap-1 sm:justify-start">
+      <td className="py-2 pr-2" data-label="Actions">
+        <div className="flex flex-wrap items-center justify-end gap-1 sm:justify-start">
           <input
             type="text"
             placeholder="name@bank"
             value={upiId}
             onChange={(e) => setUpiIdValue(e.target.value)}
-            className="input-pill w-36"
+            className="input-pill w-32"
           />
           <button
             type="button"
             disabled={isPending || upiId === (user.upiId ?? "")}
             onClick={() => run(() => setUpiId(user.id, { upiId }), "UPI ID saved")}
-            className="btn btn-outline"
+            className="btn btn-outline px-3 py-2"
+            title="Save UPI ID"
+            aria-label="Save UPI ID"
           >
-            Save
+            <Save size={16} />
           </button>
-        </div>
-      </td>
-      <td className="py-2 pr-2" data-label="Actions">
-        <div className="flex flex-wrap justify-end gap-1 sm:justify-start">
           <input
             type="password"
             placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="input-pill w-32"
+            className="input-pill w-28"
           />
           <button
             type="button"
@@ -89,9 +88,11 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
             onClick={() =>
               run(() => resetPassword(user.id, { password: newPassword }), "Password reset")
             }
-            className="btn btn-outline"
+            className="btn btn-outline px-3 py-2"
+            title="Reset password"
+            aria-label="Reset password"
           >
-            Reset
+            <KeyRound size={16} />
           </button>
           {!user.isSelf && (
             <>
@@ -104,17 +105,21 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
                     user.active ? "User deactivated" : "User reactivated"
                   )
                 }
-                className="btn btn-outline"
+                className="btn btn-outline px-3 py-2"
+                title={user.active ? "Deactivate user" : "Reactivate user"}
+                aria-label={user.active ? "Deactivate user" : "Reactivate user"}
               >
-                {user.active ? "Deactivate" : "Reactivate"}
+                {user.active ? <Ban size={16} /> : <CheckCircle2 size={16} />}
               </button>
               <button
                 type="button"
                 disabled={isPending}
                 onClick={() => run(() => deleteUser(user.id), "User deleted")}
-                className="btn btn-danger"
+                className="btn btn-danger px-3 py-2"
+                title="Delete user"
+                aria-label="Delete user"
               >
-                Delete
+                <Trash2 size={16} />
               </button>
             </>
           )}

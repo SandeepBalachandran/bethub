@@ -809,3 +809,48 @@ Follow-up to "what other player details can be shown" — user picked jersey num
 - **`predict/[matchId]/page.tsx`** and **`admin/matches/page.tsx`** — pass `flag`/`jerseyNumber` through to the components above.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Jersey numbers confirmed present in the DB for 379 players via a throwaway check script. Not yet visually checked in a browser.
+
+### Made the app installable as a PWA
+
+- **`app/manifest.ts`** (new) — Next.js App Router's manifest file convention (`MetadataRoute.Manifest`), auto-served at `/manifest.webmanifest` and auto-linked into every page's `<head>` — no manual `<link rel="manifest">` needed. Confirmed via `npm run build` (new `○ /manifest.webmanifest` route) and by reading the generated file's actual JSON content.
+- Reuses the existing `app/icon.svg` trophy design (already used for the browser tab icon and push notification icon) as both the regular and `maskable` purpose icon — no new image assets needed.
+- `theme_color: "#0d9488"` matches the icon's gradient/header teal; `display: "standalone"` gives the fullscreen app-like window when installed.
+- Deliberately **no offline caching added** — `public/sw.js` only handles push notifications (`push`/`notificationclick`), so installing this as a PWA doesn't risk serving stale content after a deploy; every page load still hits the live server exactly like the regular website.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean; manifest JSON output verified directly. Not yet tested by actually installing the PWA on a phone (Chrome's "Add to Home Screen" / install prompt).
+
+### admin/users: icon buttons, merged into one row
+
+User asked to replace text-label buttons with icons to save space and add padding, then to merge the separate "UPI ID" and "Actions" columns into a single row.
+
+- Added `lucide-react` (tree-shakable SVG icon set, React 19 compatible) — the only icon library dependency in the project.
+- `AdminUserRow.tsx`: all 4 action buttons (Save UPI, Reset password, Deactivate/Reactivate, Delete) now render an icon (`Save`, `KeyRound`, `Ban`/`CheckCircle2`, `Trash2`) instead of text, each with `px-3 py-2` padding (more generous than the default `.btn` padding, since icon-only buttons look cramped otherwise) plus `title`/`aria-label` for hover tooltips and screen readers.
+- Merged the separate "UPI ID" and "Actions" `<td>`s into a single `<td>` — both inputs (UPI ID, new password) and all 4 buttons now sit in one `flex flex-wrap` row. `admin/users/page.tsx`'s `<thead>` updated to drop the now-redundant "UPI ID" column header.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean.
+
+### Three fixes: hide Remind on past matches, restyle "Everyone's predictions", fix kickoff-time display
+
+1. **Remind button on past matches** — `/admin/predictions` showed "🔔 Remind" even for already-locked/finished matches (pointless — predictions are locked, no one can act on a reminder). Now gated on `!isMatchLocked(match)`.
+
+2. **Restyled "Everyone's predictions"** (`/match/[matchId]`) — each other player's revealed prediction now has: a colored initial-letter avatar next to their name (same palette/hash as `LeaderboardRow`), the winner shown as a pill badge (flag + team name on an accent background) instead of plain text, and scorer avatars enlarged from 16px to **40px** with the player's name underneath each one (was a cramped single inline row of tiny icons + text). Bumped the other two scorer displays on the same page (match result, my prediction) from 16px to 22px for consistency.
+
+3. **Kickoff time showing wrong for viewers in other timezones** — root cause: `match.kickoffTime.toLocaleString()` was called inside Server Components (`/admin/predictions`, `/predict/[matchId]`, `/match/[matchId]`), so it formatted using the **server's** timezone (UTC on Vercel) rather than the viewer's. Verified this wasn't a data problem first — cross-checked every `Match.kickoffTime` in the DB against a fresh, uncached call to football-data.org's live API and got zero mismatches, so the underlying stored times were always correct.
+   - **`components/LocalDateTime.tsx`** (new, client) + **`components/InlineScript.tsx`** (new) — implements the exact inline-script hydration technique documented in this repo's own Next.js docs (`node_modules/next/dist/docs/.../preventing-flash-before-hydration.md`): server renders the date in its own timezone inside a `<time suppressHydrationWarning>`, then a synchronous inline `<script>` corrects the text to the *viewer's* timezone before first paint (no flash, no hydration warning, and it degrades gracefully — `AdminMatchRow.tsx`, which is already a Client Component, was correct all along and untouched).
+   - Replaced all 3 server-side `toLocaleString()` call sites with `<LocalDateTime date={match.kickoffTime.toISOString()} />`.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not yet visually re-checked in a browser (in particular, worth confirming on a device set to a non-UTC, non-IST timezone that the corrected time actually shows up).
+
+### Cache backup snapshot + cartoon leaderboard avatars
+
+**Cache backup:** user asked to save all the API cache data to a file "just in case," committed to git (confirmed via AskUserQuestion — none of it is sensitive: team IDs, player names/photos, match results, no API keys).
+- `scripts/export-cache-snapshot.ts` (new) — recursively bundles every `.cache/**/*.json` file into one `cache-snapshot.json` at the repo root (keyed by relative path, plus an `exportedAt` timestamp). Exported 75 files this run.
+- `scripts/import-cache-snapshot.ts` (new) — the inverse: restores `.cache/` from `cache-snapshot.json`, bumping each entry's `cachedAt` to "now" so the restored cache reads as fresh immediately rather than being treated as expired and re-fetched. Actually tested — ran export then import and confirmed it restores all 75 files correctly. Hit one Windows-specific bug along the way: `await import(absoluteWindowsPath, ...)` throws `ERR_UNSUPPORTED_ESM_URL_SCHEME` (Node's ESM loader wants a `file://` URL, not a raw `F:\...` path) — switched to plain `readFile` + `JSON.parse` instead, which is simpler anyway.
+- `cache-snapshot.json` isn't excluded by `.gitignore` (only `/.cache` itself is) — this file is meant to be committed.
+- **Use later:** if `.cache/` is ever lost (fresh clone, wiped disk), run `npx tsx scripts/import-cache-snapshot.ts` to restore it before re-running any sync script, avoiding a full re-burn of the rate-limited football-data.org/api-football.com API quota.
+
+**Cartoon leaderboard avatars:** no image-generation tool is available to literally draw avatars, so used [DiceBear](https://www.dicebear.com/) (free, open-source, no auth) — its "adventurer" style (user's choice) generates a deterministic cartoon-person SVG from a seed string.
+- `LeaderboardRow.tsx` — new `CartoonAvatar` component renders `https://api.dicebear.com/9.x/adventurer/svg?seed=<userId>` (same user always gets the same character) in place of the old colored-circle-with-initials avatar. Falls back to the original initials-circle via `onError` if the image ever fails to load (e.g. DiceBear is unreachable), so the leaderboard never shows a broken image.
+- Confirmed the API endpoint responds `200 OK` directly via curl.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Cache export/import actually run and verified. DiceBear endpoint verified reachable; not yet visually checked in a browser.

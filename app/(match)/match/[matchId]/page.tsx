@@ -7,6 +7,14 @@ import { isMatchLocked } from "@/lib/match-lock";
 import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { LocalDateTime } from "@/components/LocalDateTime";
+
+const AVATAR_COLORS = ["bg-accent", "bg-secondary", "bg-highlight", "bg-success", "bg-danger"];
+
+function nameColor(id: string) {
+  const hash = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
 
 export default async function MatchDetailsPage({
   params,
@@ -63,7 +71,8 @@ export default async function MatchDetailsPage({
           <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={28} />
         </div>
         <p className="mt-1 text-center text-xs text-white/80">
-          Kickoff: {match.kickoffTime.toLocaleString()} · Status: {match.status}
+          Kickoff: <LocalDateTime date={match.kickoffTime.toISOString()} /> · Status:{" "}
+          {match.status}
         </p>
       </div>
 
@@ -77,7 +86,7 @@ export default async function MatchDetailsPage({
             {match.scorers.length > 0 ? (
               match.scorers.map((s) => (
                 <span key={s.id} className="inline-flex items-center gap-1">
-                  <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
+                  <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={22} />
                   {s.player.name}
                 </span>
               ))
@@ -103,7 +112,7 @@ export default async function MatchDetailsPage({
               {myPrediction.scorers.length > 0 ? (
                 myPrediction.scorers.map((s) => (
                   <span key={s.id} className="inline-flex items-center gap-1">
-                    <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
+                    <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={22} />
                     {s.player.name}
                   </span>
                 ))
@@ -125,7 +134,7 @@ export default async function MatchDetailsPage({
 
       {isLocked ? (
         <section className="card space-y-3 p-4 text-sm">
-          <p className="font-semibold">Everyone&apos;s predictions</p>
+          <p className="font-semibold">🔓 Everyone&apos;s predictions</p>
           {otherPredictions.length === 0 ? (
             <p className="text-gray-500">No one else predicted this match.</p>
           ) : (
@@ -133,33 +142,51 @@ export default async function MatchDetailsPage({
               {otherPredictions.map((prediction) => (
                 <div
                   key={prediction.id}
-                  className="rounded-xl bg-black/2 p-3 dark:bg-white/5"
+                  className="card-interactive space-y-2 rounded-xl border border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] bg-black/2 p-3 dark:bg-white/5"
                 >
-                  <p className="font-medium">{prediction.user.name}</p>
-                  <div className="mt-1 flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                    <span className="text-xs font-semibold text-gray-400">Winner</span>
-                    <TeamFlag
-                      flag={prediction.winnerTeam.flag}
-                      name={prediction.winnerTeam.name}
-                      size={16}
-                    />
-                    <span>{prediction.winnerTeam.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${nameColor(
+                        prediction.userId
+                      )}`}
+                    >
+                      {prediction.user.name.slice(0, 1).toUpperCase()}
+                    </span>
+                    <p className="font-medium">{prediction.user.name}</p>
                   </div>
-                  <div className="mt-1 flex items-start gap-2 text-gray-600 dark:text-gray-300">
-                    <span className="mt-0.5 shrink-0 text-xs font-semibold text-gray-400">
+
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                    <span className="w-14 shrink-0 text-xs font-semibold text-gray-400">
+                      Winner
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+                      <TeamFlag
+                        flag={prediction.winnerTeam.flag}
+                        name={prediction.winnerTeam.name}
+                        size={16}
+                      />
+                      {prediction.winnerTeam.name}
+                    </span>
+                  </div>
+
+                  <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">
+                    <span className="mt-1 w-14 shrink-0 text-xs font-semibold text-gray-400">
                       Scorers
                     </span>
                     {prediction.scorers.length > 0 ? (
-                      <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      <div className="flex flex-wrap gap-3">
                         {prediction.scorers.map((s) => (
-                          <span key={s.id} className="inline-flex items-center gap-1">
-                            <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
-                            {s.player.name}
+                          <span
+                            key={s.id}
+                            className="flex flex-col items-center gap-1 text-center text-xs"
+                          >
+                            <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={40} />
+                            <span className="max-w-16 truncate">{s.player.name}</span>
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-gray-400">None</span>
+                      <span className="mt-1 text-gray-400">None</span>
                     )}
                   </div>
                 </div>
