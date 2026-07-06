@@ -49,7 +49,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-3">
-          <ProfileMenu name={session.user.name ?? "?"} />
+          <ProfileMenu name={session.user.name ?? "?"} avatarUrl={session.user.avatarUrl} />
         </div>
       </header>
 

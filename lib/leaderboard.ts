@@ -4,6 +4,7 @@ import { calculateMatchPoints } from "@/lib/scoring";
 export type LeaderboardEntry = {
   userId: string;
   name: string;
+  avatarUrl: string | null;
   winnerPoints: number;
   scorerPoints: number;
   total: number;
@@ -20,13 +21,20 @@ type FinishedMatchWithPredictions = {
 };
 
 function computeLeaderboardEntries(
-  users: { id: string; name: string }[],
+  users: { id: string; name: string; avatarUrl: string | null }[],
   finishedMatches: FinishedMatchWithPredictions[]
 ): LeaderboardEntry[] {
   const entries = new Map<string, LeaderboardEntry>(
     users.map((user) => [
       user.id,
-      { userId: user.id, name: user.name, winnerPoints: 0, scorerPoints: 0, total: 0 },
+      {
+        userId: user.id,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        winnerPoints: 0,
+        scorerPoints: 0,
+        total: 0,
+      },
     ])
   );
 
@@ -59,7 +67,10 @@ function computeLeaderboardEntries(
 
 async function getUsersAndFinishedMatches() {
   return Promise.all([
-    prisma.user.findMany({ where: { role: "USER" }, select: { id: true, name: true } }),
+    prisma.user.findMany({
+      where: { role: "USER" },
+      select: { id: true, name: true, avatarUrl: true },
+    }),
     prisma.match.findMany({
       where: { status: "FINISHED" },
       include: {

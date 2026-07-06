@@ -854,3 +854,32 @@ User asked to replace text-label buttons with icons to save space and add paddin
 - Confirmed the API endpoint responds `200 OK` directly via curl.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Cache export/import actually run and verified. DiceBear endpoint verified reachable; not yet visually checked in a browser.
+
+---
+
+## Follow-up: Leaderboard legend + "up next" fixture highlight + user profile avatar (DB-backed)
+
+### Leaderboard legend
+
+Added a small legend card above the leaderboard list explaining the `W`/`S`/`P` pill abbreviations, the 🔥 streak badge, and the ▲/▼ rank-change indicator, so new players don't have to guess what the letters mean.
+
+### Fixtures: highlight the next upcoming match
+
+`app/(fixtures)/fixtures/page.tsx` now computes `nextMatch` — the earliest-kickoff match with `status !== "FINISHED"` across all rounds — and passes `isNext` into `MatchCardData`. `MatchCard` renders an "Up next" badge and a pulsing highlight border (new `.animate-pulse-border` class in `globals.css`, animating `box-shadow` in the highlight color) on that one card.
+
+### User profile avatar (admin-settable, DB-backed)
+
+Added `User.avatarUrl String?` to `prisma/schema.prisma` (MongoDB is schemaless, so no migration — just `npx prisma generate` after stopping `next dev`, which hit the usual Windows `EPERM` lock and was resolved by asking the user to stop the dev server first). Admin can now paste any image URL (e.g. a DiceBear link) per user in `/admin/users` via a new input + save button (`actions/user.ts`'s `setAvatarUrl`, validated with Zod as a URL or empty string).
+
+- `lib/auth.ts`'s `session` callback now re-fetches `avatarUrl` fresh from the DB on every session read (keyed off `token.id`), so an admin's avatar change reflects on the user's next request without requiring them to log out/in.
+- `types/next-auth.d.ts` — added `avatarUrl?: string | null` to both `Session.user` and `User`.
+- `components/ProfileMenu.tsx` — renders the DB `avatarUrl` as the header avatar image (top-right) when set, falling back to the existing initials circle.
+- `lib/leaderboard.ts`'s `LeaderboardEntry` gained `avatarUrl`; `components/features/leaderboard/LeaderboardRow.tsx`'s `CartoonAvatar` now prefers `entry.avatarUrl` and only falls back to the DiceBear-generated cartoon avatar (or the colored-initials circle on image load failure) when no custom avatar is set.
+
+### Verification
+
+- `npx prisma generate` succeeded once the user stopped their dev server.
+- `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean (17 routes, unchanged route count).
+- Not yet visually checked in a browser: the pulsing "up next" border, the leaderboard legend layout on mobile, and the admin avatar-URL input/save flow end-to-end with a real DiceBear URL.
+
+**Status:** ✅ Implemented; type-checked, linted, and built clean. Recommend a quick visual pass in-browser.

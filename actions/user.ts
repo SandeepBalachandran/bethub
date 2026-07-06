@@ -103,6 +103,23 @@ export async function setUpiId(userId: string, input: z.infer<typeof setUpiIdSch
   revalidatePath("/admin/money");
 }
 
+const setAvatarUrlSchema = z.object({
+  avatarUrl: z.string().trim().url("Enter a valid image URL").or(z.literal("")),
+});
+
+export async function setAvatarUrl(userId: string, input: z.infer<typeof setAvatarUrlSchema>) {
+  await requireAdmin();
+  const data = setAvatarUrlSchema.parse(input);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { avatarUrl: data.avatarUrl || null },
+  });
+
+  revalidatePath("/admin/users");
+  revalidatePath("/leaderboard");
+}
+
 export async function deleteUser(userId: string) {
   const admin = await requireAdmin();
   if (admin.id === userId) {

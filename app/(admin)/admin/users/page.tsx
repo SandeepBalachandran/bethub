@@ -37,6 +37,7 @@ export default async function AdminUsersPage() {
                   active: user.active,
                   isSelf: user.id === admin.id,
                   upiId: user.upiId,
+                  avatarUrl: user.avatarUrl,
                 }}
               />
             ))}

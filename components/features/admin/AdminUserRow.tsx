@@ -9,6 +9,7 @@ import {
   deleteUser,
   reactivateUser,
   resetPassword,
+  setAvatarUrl,
   setUpiId,
 } from "@/actions/user";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -21,6 +22,7 @@ export type AdminUserRowData = {
   active: boolean;
   isSelf: boolean;
   upiId: string | null;
+  avatarUrl: string | null;
 };
 
 export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
@@ -28,6 +30,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
   const [isPending, startTransition] = useTransition();
   const [newPassword, setNewPassword] = useState("");
   const [upiId, setUpiIdValue] = useState(user.upiId ?? "");
+  const [avatarUrl, setAvatarUrlValue] = useState(user.avatarUrl ?? "");
 
   function run(action: () => Promise<unknown>, successMessage: string) {
     startTransition(async () => {
@@ -72,6 +75,25 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
             className="btn btn-outline px-3 py-2"
             title="Save UPI ID"
             aria-label="Save UPI ID"
+          >
+            <Save size={16} />
+          </button>
+          <input
+            type="text"
+            placeholder="Avatar image URL"
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrlValue(e.target.value)}
+            className="input-pill w-40"
+          />
+          <button
+            type="button"
+            disabled={isPending || avatarUrl === (user.avatarUrl ?? "")}
+            onClick={() =>
+              run(() => setAvatarUrl(user.id, { avatarUrl }), "Avatar saved")
+            }
+            className="btn btn-outline px-3 py-2"
+            title="Save avatar URL"
+            aria-label="Save avatar URL"
           >
             <Save size={16} />
           </button>

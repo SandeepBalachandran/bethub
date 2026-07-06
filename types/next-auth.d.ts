@@ -5,11 +5,13 @@ declare module "next-auth" {
     user: {
       id: string;
       role: "ADMIN" | "USER";
+      avatarUrl?: string | null;
     } & DefaultSession["user"];
   }
 
   interface User {
     role: "ADMIN" | "USER";
+    avatarUrl?: string | null;
   }
 }
 

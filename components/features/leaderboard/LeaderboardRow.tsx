@@ -20,8 +20,16 @@ function avatarColorFor(userId: string) {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
 
-/** Deterministic cartoon avatar per user — same seed always renders the same character. */
-function CartoonAvatar({ userId, name }: { readonly userId: string; readonly name: string }) {
+/** Uses the user's chosen avatar if set, otherwise a deterministic DiceBear cartoon character. */
+function CartoonAvatar({
+  userId,
+  name,
+  avatarUrl,
+}: {
+  readonly userId: string;
+  readonly name: string;
+  readonly avatarUrl: string | null;
+}) {
   const [failed, setFailed] = useState(false);
   const initials = name.slice(0, 2).toUpperCase();
 
@@ -40,7 +48,7 @@ function CartoonAvatar({ userId, name }: { readonly userId: string; readonly nam
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(userId)}`}
+      src={avatarUrl || `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(userId)}`}
       alt=""
       width={36}
       height={36}
@@ -92,7 +100,7 @@ export function LeaderboardRow({
         )}
       </div>
 
-      <CartoonAvatar userId={entry.userId} name={entry.name} />
+      <CartoonAvatar userId={entry.userId} name={entry.name} avatarUrl={entry.avatarUrl} />
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold">

@@ -37,6 +37,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          avatarUrl: user.avatarUrl,
         };
       },
     }),
@@ -53,6 +54,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as "ADMIN" | "USER";
+        // Fetch fresh so admin-set avatar changes show up without re-login.
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { avatarUrl: true },
+        });
+        session.user.avatarUrl = dbUser?.avatarUrl ?? null;
       }
       return session;
     },
