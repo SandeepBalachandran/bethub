@@ -68,7 +68,7 @@ function computeLeaderboardEntries(
 async function getUsersAndFinishedMatches() {
   return Promise.all([
     prisma.user.findMany({
-      where: { role: "USER" },
+      where: { active: true },
       select: { id: true, name: true, avatarUrl: true },
     }),
     prisma.match.findMany({
