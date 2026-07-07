@@ -1,5 +1,5 @@
 import { Round, type PrismaClient } from "@prisma/client";
-import { fetchCompetitionMatches, fetchLiveMatchResults, type FootballDataTeam, type FootballDataMatch } from "@/lib/football-data";
+import { fetchCompetitionMatches, fetchLiveMatchResults, fetchCompetitionScorersList, type FootballDataTeam, type FootballDataMatch } from "@/lib/football-data";
 
 const STAGE_TO_ROUND: Record<string, Round> = {
   LAST_16: Round.ROUND_OF_16,
@@ -140,6 +140,11 @@ export async function syncLiveMatchResults(
       revalidateSeconds: 0,
     });
 
+    // Fetch all scorers from the dedicated endpoint for more reliable data
+    const allScorers = await fetchCompetitionScorersList(competitionCode, {
+      revalidateSeconds: 0,
+    });
+
     for (const liveMatch of liveMatches) {
       if (!liveMatch.id || !liveMatch.score) {
         continue;
@@ -147,7 +152,7 @@ export async function syncLiveMatchResults(
 
       const dbMatch = await prisma.match.findUnique({
         where: { externalId: liveMatch.id },
-        include: { scorers: true },
+        include: { scorers: true, homeTeam: true, awayTeam: true },
       });
 
       if (!dbMatch) {
@@ -176,20 +181,31 @@ export async function syncLiveMatchResults(
           where: { matchId: dbMatch.id },
         });
 
-        if (liveMatch.scorers && liveMatch.scorers.length > 0) {
-          for (const scorer of liveMatch.scorers) {
-            if (scorer.type === "GOAL") {
-              const player = await prisma.player.findFirst({
-                where: {
-                  name: scorer.player.name,
-                  team: {
-                    externalId: scorer.team.id,
-                  },
-                },
-                select: { id: true },
-              });
+        // Get scorers for this match's teams from the scorers endpoint
+        const homeTeamExternalId = liveMatch.homeTeam.id;
+        const awayTeamExternalId = liveMatch.awayTeam.id;
 
-              if (player) {
+        const matchScorers = allScorers.filter(
+          (scorer) =>
+            scorer.teamId === homeTeamExternalId ||
+            scorer.teamId === awayTeamExternalId
+        );
+
+        if (matchScorers.length > 0) {
+          for (const scorer of matchScorers) {
+            const player = await prisma.player.findFirst({
+              where: {
+                name: scorer.playerName,
+                team: {
+                  externalId: scorer.teamId,
+                },
+              },
+              select: { id: true },
+            });
+
+            if (player) {
+              // Add the player once for each goal they scored
+              for (let i = 0; i < scorer.numberOfGoals; i++) {
                 await prisma.matchScorer.create({
                   data: {
                     matchId: dbMatch.id,

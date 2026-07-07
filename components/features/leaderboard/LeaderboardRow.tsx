@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
 import { formatMoney } from "@/lib/format-money";
@@ -79,15 +80,16 @@ export function LeaderboardRow({
   const medal = MEDALS[rank - 1];
 
   return (
-    <motion.div
-      layout
-      layoutId={entry.userId}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`card card-interactive flex items-center gap-2 sm:gap-3 p-2 sm:p-3 ${
-        isCurrentUser ? "border-highlight bg-highlight/10" : ""
-      } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
-    >
-      <div className="flex shrink-0 flex-col items-center gap-0.5">
+    <Link href={`/user/${entry.userId}/predictions`}>
+      <motion.div
+        layout
+        layoutId={entry.userId}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className={`card card-interactive flex items-center gap-2 sm:gap-3 p-2 sm:p-3 ${
+          isCurrentUser ? "border-highlight bg-highlight/10" : ""
+        } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
+      >
+        <div className="flex shrink-0 flex-col items-center gap-0.5">
         <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 text-xs sm:text-sm font-bold dark:bg-white/10">
           {medal ?? <span className="text-gray-500">#{rank}</span>}
         </div>
@@ -98,11 +100,11 @@ export function LeaderboardRow({
             {rankChange > 0 ? `▲${rankChange}` : `▼${Math.abs(rankChange)}`}
           </span>
         )}
-      </div>
+        </div>
 
-      <CartoonAvatar userId={entry.userId} name={entry.name} avatarUrl={entry.avatarUrl} />
+        <CartoonAvatar userId={entry.userId} name={entry.name} avatarUrl={entry.avatarUrl} />
 
-      <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1">
         <p className="truncate text-xs sm:text-sm font-semibold">
           {entry.name}
           {isCurrentUser && (
@@ -110,8 +112,8 @@ export function LeaderboardRow({
               you
             </span>
           )}
-        </p>
-        <div className="mt-0.5 flex flex-wrap gap-0.5 sm:gap-1 text-[8px] sm:text-[10px]">
+          </p>
+          <div className="mt-0.5 flex flex-wrap gap-0.5 sm:gap-1 text-[8px] sm:text-[10px]">
           <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
             W +{entry.winnerPoints}
           </span>
@@ -128,20 +130,21 @@ export function LeaderboardRow({
               🔥 {streak}
             </span>
           )}
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-col items-end gap-0.5 sm:gap-1">
-        <div>
-          <p className="gradient-text text-lg sm:text-xl font-extrabold">{entry.total}</p>
-          <p className="text-[8px] sm:text-[10px] text-gray-400">pts</p>
+        <div className="flex flex-col items-end gap-0.5 sm:gap-1">
+          <div>
+            <p className="gradient-text text-lg sm:text-xl font-extrabold">{entry.total}</p>
+            <p className="text-[8px] sm:text-[10px] text-gray-400">pts</p>
+          </div>
+          <div className={`text-right text-[8px] sm:text-[10px] font-semibold ${
+            moneyBalance >= 0 ? "text-success" : "text-danger"
+          }`}>
+            <p>{formatMoney(moneyBalance)}</p>
+          </div>
         </div>
-        <div className={`text-right text-[8px] sm:text-[10px] font-semibold ${
-          moneyBalance >= 0 ? "text-success" : "text-danger"
-        }`}>
-          <p>{formatMoney(moneyBalance)}</p>
-        </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 }

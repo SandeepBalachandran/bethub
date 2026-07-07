@@ -84,7 +84,7 @@ export default async function FixturesPage() {
       )}
 
       <p className="text-xs text-gray-500">
-        Predictions lock automatically {AUTO_LOCK_MINUTES_BEFORE_KICKOFF} minutes before each
+        Predictions lock automatically {AUTO_LOCK_MINUTES_BEFORE_KICKOFF +' '}  minutes before each
         match&apos;s kickoff.
       </p>
 

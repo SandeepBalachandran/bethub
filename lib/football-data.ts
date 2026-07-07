@@ -187,6 +187,54 @@ export async function fetchTeamSquad(
   return data.squad ?? [];
 }
 
+export type FootballDataScorer = {
+  playerId: number;
+  playerName: string;
+  teamId: number;
+  teamName: string;
+  numberOfGoals: number;
+};
+
+type CompetitionScorersResponse = {
+  scorers: FootballDataScorer[];
+};
+
+export async function fetchCompetitionScorersList(
+  competitionCode: string,
+  options: { revalidateSeconds?: number } = {}
+): Promise<FootballDataScorer[]> {
+  const revalidate = options.revalidateSeconds ?? 60;
+
+  const token = process.env.FOOTBALL_DATA_API_TOKEN;
+  if (!token) {
+    throw new Error("FOOTBALL_DATA_API_TOKEN is not set in the environment.");
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/competitions/${competitionCode}/scorers`,
+      {
+        headers: { "X-Auth-Token": token },
+        next: { revalidate, tags: [`scorers-${competitionCode}`] },
+      }
+    );
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(
+        `football-data.org request failed: ${response.status} ${response.statusText}` +
+          (body ? ` — ${body.slice(0, 300)}` : "")
+      );
+    }
+
+    const data = (await response.json()) as CompetitionScorersResponse;
+    return data.scorers;
+  } catch (error) {
+    console.error("Error fetching competition scorers:", error);
+    return [];
+  }
+}
+
 export async function fetchLiveMatchResults(
   competitionCode: string,
   options: { revalidateSeconds?: number } = {}
