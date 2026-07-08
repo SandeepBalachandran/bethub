@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/authz";
 import { MatchCard, type MatchCardData } from "@/components/features/matches/MatchCard";
 import { fetchLiveCompetitionMatches, type FootballDataMatch } from "@/lib/football-data";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
+import { syncLiveMatchResults } from "@/lib/sync-matches";
 import { FirstMatchCountdown } from "@/components/FirstMatchCountdown";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import type { Round } from "@prisma/client";
@@ -38,6 +39,9 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
 
 export default async function FixturesPage() {
   const user = await requireAuth();
+
+  // Sync live match results from Football Data API
+  await syncLiveMatchResults(prisma);
 
   const [matches, liveStatusByExternalId] = await Promise.all([
     prisma.match.findMany({
