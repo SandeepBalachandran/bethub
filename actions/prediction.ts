@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { isMatchLocked } from "@/lib/match-lock";
+import { spendCoins, getUnlockCost } from "@/lib/coin-rewards";
 
 const predictionSchema = z.object({
   matchId: z.string().min(1),
@@ -12,7 +13,7 @@ const predictionSchema = z.object({
   scorerPlayerIds: z
     .array(z.string().min(1))
     .min(2, "Pick at least 2 goal scorers.")
-    .max(3, "Pick at most 3 goal scorers."),
+    .max(4, "Pick at most 4 goal scorers."),
 });
 
 export type PredictionInput = z.infer<typeof predictionSchema>;
@@ -58,6 +59,22 @@ export async function submitPrediction(input: PredictionInput) {
 
   if (validPlayers.length !== data.scorerPlayerIds.length) {
     throw new Error("Scorer picks must belong to one of the two teams in this match.");
+  }
+
+  // Calculate coin cost based on number of scorers
+  let coinCost = 0;
+  if (data.scorerPlayerIds.length === 3) {
+    coinCost = await getUnlockCost(3);
+  } else if (data.scorerPlayerIds.length === 4) {
+    coinCost = await getUnlockCost(4);
+  }
+
+  // Check and spend coins if needed
+  if (coinCost > 0) {
+    const spent = await spendCoins(user.id, coinCost);
+    if (!spent) {
+      throw new Error(`Insufficient coins. Using ${data.scorerPlayerIds.length} scorers costs ${coinCost} coins.`);
+    }
   }
 
   const prediction = await prisma.$transaction(async (tx) => {

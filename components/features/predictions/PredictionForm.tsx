@@ -28,8 +28,6 @@ export function PredictionForm({
   initialWinnerTeamId,
   initialScorerPlayerIds,
   coinBalance = 0,
-  canUse3rdScorer = false,
-  canUse4thScorer = false,
 }: {
   readonly matchId: string;
   readonly homeTeam: PredictionFormTeam;
@@ -37,8 +35,6 @@ export function PredictionForm({
   readonly initialWinnerTeamId: string | null;
   readonly initialScorerPlayerIds: string[];
   readonly coinBalance?: number;
-  readonly canUse3rdScorer?: boolean;
-  readonly canUse4thScorer?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -51,7 +47,20 @@ export function PredictionForm({
     initialScorerPlayerIds[3] ?? "",
   ]);
 
-  const maxScorerIndex = canUse4thScorer ? 3 : canUse3rdScorer ? 2 : 1;
+  const scorerCount = scorers.filter(Boolean).length;
+  const maxScorerIndex = 3; // Allow up to 4 scorers
+
+  // Calculate cost based on scorer count
+  const costFor3rdScorer = 50;
+  const costFor4thScorer = 150;
+  let predictedCost = 0;
+  if (scorerCount === 3) {
+    predictedCost = costFor3rdScorer;
+  } else if (scorerCount === 4) {
+    predictedCost = costFor4thScorer;
+  }
+
+  const hasEnoughCoins = coinBalance >= predictedCost;
 
   // Sort alphabetically within each team, but keep the two teams as separate
   // blocks (home team's roster, then away team's) rather than interleaving them.
@@ -84,11 +93,21 @@ export function PredictionForm({
       return;
     }
     if (scorerPlayerIds.length > maxScorerIndex + 1) {
-      setError(`You can only pick up to ${maxScorerIndex + 1} scorers. Visit rewards to unlock more.`);
+      setError(`You can only pick up to ${maxScorerIndex + 1} scorers.`);
       return;
     }
     if (new Set(scorerPlayerIds).size !== scorerPlayerIds.length) {
       setError("Scorer picks must be distinct players.");
+      return;
+    }
+
+    // Check coin balance for premium scorers
+    if (scorerPlayerIds.length === 3 && coinBalance < costFor3rdScorer) {
+      setError(`Using 3 scorers costs ${costFor3rdScorer} coins. You have ${coinBalance}.`);
+      return;
+    }
+    if (scorerPlayerIds.length === 4 && coinBalance < costFor4thScorer) {
+      setError(`Using 4 scorers costs ${costFor4thScorer} coins. You have ${coinBalance}.`);
       return;
     }
 
@@ -137,39 +156,24 @@ export function PredictionForm({
       <fieldset className="space-y-2">
         <div className="flex items-center justify-between">
           <legend className="text-sm font-medium">
-            Goal scorers (pick at least 2{maxScorerIndex > 1 ? `, up to ${maxScorerIndex + 1}` : ""})
+            Goal scorers (pick at least 2, up to 4)
           </legend>
-          {!canUse3rdScorer && (
-            <a
-              href="/rewards"
-              className="text-xs font-semibold text-accent hover:underline"
-            >
-              Unlock more →
-            </a>
-          )}
+          <div className="text-xs text-gray-600 dark:text-gray-400">
+            {predictedCost > 0 && (
+              <span className={hasEnoughCoins ? "text-success" : "text-danger"}>
+                💰 {predictedCost} coins
+              </span>
+            )}
+          </div>
         </div>
 
         {[0, 1, 2, 3].map((index) => {
-          const isLocked = index > maxScorerIndex;
-
-          if (isLocked) {
-            return (
-              <div
-                key={index}
-                className="flex items-center gap-3 rounded-xl border border-dashed border-gray-300 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-900/30"
-              >
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  🔒 Scorer {index + 1}
-                </span>
-                <a
-                  href="/rewards"
-                  className="ml-auto text-xs font-semibold text-accent hover:underline"
-                >
-                  Unlock with coins
-                </a>
-              </div>
-            );
-          }
+          const label =
+            index === 0 || index === 1
+              ? `Scorer ${index + 1}`
+              : index === 2
+                ? `Scorer ${index + 1} (${costFor3rdScorer} coins)`
+                : `Scorer ${index + 1} (${costFor4thScorer} coins)`;
 
           return (
             <PlayerCombobox
@@ -177,7 +181,7 @@ export function PredictionForm({
               players={allPlayers}
               value={scorers[index]}
               onChange={(playerId) => handleScorerChange(index, playerId)}
-              placeholder={`Scorer ${index + 1}...`}
+              placeholder={label}
               excludeIds={scorers.filter((_, i) => i !== index)}
             />
           );
@@ -196,11 +200,18 @@ export function PredictionForm({
           isPending ||
           !winnerTeamId ||
           scorers.filter(Boolean).length < 2 ||
-          scorers.filter(Boolean).length > maxScorerIndex + 1
+          scorers.filter(Boolean).length > maxScorerIndex + 1 ||
+          !hasEnoughCoins
         }
         className="btn btn-primary w-full py-2.5"
       >
-        {isPending ? "Saving..." : initialWinnerTeamId ? "Update prediction" : "Save prediction"}
+        {isPending ? (
+          "Saving..."
+        ) : predictedCost > 0 ? (
+          `${initialWinnerTeamId ? "Update" : "Save"} prediction (${predictedCost} 💰)`
+        ) : (
+          initialWinnerTeamId ? "Update prediction" : "Save prediction"
+        )}
       </button>
     </form>
   );
