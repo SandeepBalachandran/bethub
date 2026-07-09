@@ -71,7 +71,8 @@ export async function submitPrediction(input: PredictionInput) {
 
   // Check and spend coins if needed
   if (coinCost > 0) {
-    const spent = await spendCoins(user.id, coinCost);
+    const reason = data.scorerPlayerIds.length === 3 ? "3rd_scorer" : "4th_scorer";
+    const spent = await spendCoins(user.id, coinCost, reason, data.matchId);
     if (!spent) {
       throw new Error(`Insufficient coins. Using ${data.scorerPlayerIds.length} scorers costs ${coinCost} coins.`);
     }

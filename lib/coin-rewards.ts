@@ -98,7 +98,10 @@ export async function awardDailyCoins(userId: string) {
     });
   }
 
-  // Award coins
+  const balanceBefore = coinBalance.balance;
+  const balanceAfter = balanceBefore + coinsToAward;
+
+  // Award coins and log transaction
   await Promise.all([
     prisma.coinBalance.update({
       where: { userId },
@@ -109,6 +112,16 @@ export async function awardDailyCoins(userId: string) {
         userId,
         day: dayNumber,
         coins: coinsToAward,
+      },
+    }),
+    prisma.coinTransaction.create({
+      data: {
+        userId,
+        type: "award",
+        reason: `daily_reward_day_${dayNumber}`,
+        amount: coinsToAward,
+        balanceBefore,
+        balanceAfter,
       },
     }),
   ]);
@@ -123,7 +136,12 @@ export async function getUserCoinBalance(userId: string): Promise<number> {
   return coinBalance?.balance ?? 0;
 }
 
-export async function spendCoins(userId: string, amount: number): Promise<boolean> {
+export async function spendCoins(
+  userId: string,
+  amount: number,
+  reason: string = "unknown",
+  relatedId?: string
+): Promise<boolean> {
   const coinBalance = await prisma.coinBalance.findUnique({
     where: { userId },
   });
@@ -132,10 +150,26 @@ export async function spendCoins(userId: string, amount: number): Promise<boolea
     return false;
   }
 
-  await prisma.coinBalance.update({
-    where: { userId },
-    data: { balance: { decrement: amount } },
-  });
+  const balanceBefore = coinBalance.balance;
+  const balanceAfter = balanceBefore - amount;
+
+  await Promise.all([
+    prisma.coinBalance.update({
+      where: { userId },
+      data: { balance: { decrement: amount } },
+    }),
+    prisma.coinTransaction.create({
+      data: {
+        userId,
+        type: "spend",
+        reason,
+        amount,
+        balanceBefore,
+        balanceAfter,
+        relatedId,
+      },
+    }),
+  ]);
 
   return true;
 }

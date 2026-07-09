@@ -38,6 +38,9 @@ export async function activateBooster(
     }
 
     // Update prediction and deduct coins
+    const balanceBefore = coinBalance.balance;
+    const balanceAfter = balanceBefore - BOOSTER_COST;
+
     await Promise.all([
       prisma.prediction.update({
         where: { id: predictionId },
@@ -46,6 +49,17 @@ export async function activateBooster(
       prisma.coinBalance.update({
         where: { userId },
         data: { balance: { decrement: BOOSTER_COST } },
+      }),
+      prisma.coinTransaction.create({
+        data: {
+          userId,
+          type: "spend",
+          reason: "booster",
+          amount: BOOSTER_COST,
+          balanceBefore,
+          balanceAfter,
+          relatedId: predictionId,
+        },
       }),
     ]);
 

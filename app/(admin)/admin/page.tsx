@@ -71,6 +71,9 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
             Manage rewards
           </Link>
+          <Link href="/admin/coins" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+            View coin history
+          </Link>
         </div>
       </div>
 

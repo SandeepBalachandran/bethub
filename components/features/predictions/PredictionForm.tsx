@@ -7,6 +7,7 @@ import { submitPrediction } from "@/actions/prediction";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
 import { TeamFlag } from "@/components/TeamFlag";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { MostPickedPlayer } from "@/lib/most-picked-players";
 
 export type PredictionFormPlayer = {
@@ -137,18 +138,22 @@ export function PredictionForm({
       {mostPickedPlayers.length > 0 && (
         <div className="rounded-lg border border-success/20 bg-success/5 p-3">
           <p className="text-xs font-medium text-success mb-2">📊 Popular Picks from Completed Matches</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
             {mostPickedPlayers.map((player) => {
               const team = player.teamId === homeTeam.id ? homeTeam : awayTeam;
               return (
                 <div
                   key={player.id}
-                  className="flex items-center gap-2 rounded px-2 py-1.5 bg-white/50 dark:bg-white/5 text-xs"
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm bg-white/50 dark:bg-white/10"
                 >
-                  <TeamFlag flag={team.flag ?? null} name={team.name} size={14} />
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-gray-700 dark:text-gray-300">{player.name}</p>
-                  </div>
+                  <PlayerAvatar name={player.name} photoUrl={player.photoUrl} size={24} />
+                  {team.flag && <TeamFlag flag={team.flag} name={team.name} size={14} />}
+                  <span className="truncate flex-1 text-gray-700 dark:text-gray-300">
+                    {player.name}
+                    {player.position && (
+                      <span className="ml-1 text-xs text-gray-400">({player.position})</span>
+                    )}
+                  </span>
                   <span className="text-success font-semibold whitespace-nowrap">{player.pickCount}</span>
                 </div>
               );

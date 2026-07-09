@@ -41,6 +41,7 @@ model User {
   pushSubscriptions PushSubscription[]
   coinBalance       CoinBalance?
   dailyRewards      DailyReward[]
+  coinTransactions  CoinTransaction[]
 }
 
 model PushSubscription {
@@ -166,4 +167,21 @@ model RewardConfig {
   thirdScorerCost        Int      @default(50)
   fourthScorerCost       Int      @default(150)
   updatedAt              DateTime @updatedAt
+}
+
+model CoinTransaction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  type        String   // "spend" or "award"
+  reason      String   // "booster", "3rd_scorer", "4th_scorer", "daily_reward", etc.
+  amount      Int      // positive for both spend and award
+  balanceBefore Int
+  balanceAfter Int
+  relatedId   String?  // predictionId for booster/scorer, null for rewards
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
 }
