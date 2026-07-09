@@ -7,6 +7,7 @@ import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
 import { getUserCoinBalance } from "@/lib/coin-rewards";
+import { getMostPickedPlayers } from "@/lib/most-picked-players";
 
 export default async function PredictPage({
   params,
@@ -37,6 +38,7 @@ export default async function PredictPage({
   const existingPrediction = match.predictions[0] ?? null;
 
   const coinBalance = await getUserCoinBalance(user.id);
+  const mostPickedPlayers = await getMostPickedPlayers(matchId, 5);
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
@@ -97,6 +99,7 @@ export default async function PredictPage({
             initialWinnerTeamId={existingPrediction?.winnerTeamId ?? null}
             initialScorerPlayerIds={existingPrediction?.scorers.map((s) => s.playerId) ?? []}
             coinBalance={coinBalance}
+            mostPickedPlayers={mostPickedPlayers}
           />
         </>
       )}

@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { submitPrediction } from "@/actions/prediction";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
+import { TeamFlag } from "@/components/TeamFlag";
+import type { MostPickedPlayer } from "@/lib/most-picked-players";
 
 export type PredictionFormPlayer = {
   id: string;
@@ -28,6 +30,7 @@ export function PredictionForm({
   initialWinnerTeamId,
   initialScorerPlayerIds,
   coinBalance = 0,
+  mostPickedPlayers = [],
 }: {
   readonly matchId: string;
   readonly homeTeam: PredictionFormTeam;
@@ -35,6 +38,7 @@ export function PredictionForm({
   readonly initialWinnerTeamId: string | null;
   readonly initialScorerPlayerIds: string[];
   readonly coinBalance?: number;
+  readonly mostPickedPlayers?: MostPickedPlayer[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -130,6 +134,29 @@ export function PredictionForm({
   return (
     <form onSubmit={handleSubmit} className="card space-y-6 p-4 sm:p-5">
       <LoadingOverlay show={isPending} label="Saving your prediction..." />
+      {mostPickedPlayers.length > 0 && (
+        <div className="rounded-lg border border-success/20 bg-success/5 p-3">
+          <p className="text-xs font-medium text-success mb-2">📊 Popular Picks from Completed Matches</p>
+          <div className="grid grid-cols-2 gap-2">
+            {mostPickedPlayers.map((player) => {
+              const team = player.teamId === homeTeam.id ? homeTeam : awayTeam;
+              return (
+                <div
+                  key={player.id}
+                  className="flex items-center gap-2 rounded px-2 py-1.5 bg-white/50 dark:bg-white/5 text-xs"
+                >
+                  <TeamFlag flag={team.flag ?? null} name={team.name} size={14} />
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-gray-700 dark:text-gray-300">{player.name}</p>
+                  </div>
+                  <span className="text-success font-semibold whitespace-nowrap">{player.pickCount}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Winner</legend>
         {[homeTeam, awayTeam].map((team) => (
