@@ -67,6 +67,7 @@ export function LeaderboardList({
               moneyBalance={moneyByUserId.get(entry.userId) || 0}
               streak={streakByUserId.get(entry.userId) || 0}
               rankChange={previousRank - rank}
+              highlightedMetric={sortBy}
             />
           );
         })}

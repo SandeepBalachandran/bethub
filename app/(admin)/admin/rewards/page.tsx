@@ -119,88 +119,82 @@ export default function AdminRewardsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-8 p-4 sm:p-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold gradient-text">Manage Rewards</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+    <main className="mx-auto max-w-2xl space-y-6 sm:space-y-8 p-3 sm:p-4 md:p-6">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Rewards</h1>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
           Configure pricing for all reward items
         </p>
       </div>
 
-      <div className="card space-y-6 p-6">
+      <div className="card space-y-4 sm:space-y-6 p-4 sm:p-6">
         {/* 2x Points Booster */}
-        <div className="space-y-3 border-b border-gray-200 pb-6 dark:border-gray-800">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              ⚡ 2x Points Booster Cost
-            </label>
-            <p className="text-xs text-gray-500 mb-3">
-              Price users pay to activate 2x points multiplier
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                value={formData.boosterCost}
-                onChange={(e) => handleChange("boosterCost", e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              />
-              <span className="text-gray-600 dark:text-gray-400">💰 coins</span>
-            </div>
+        <div className="space-y-2 sm:space-y-3 border-b border-gray-200 pb-4 sm:pb-6 dark:border-gray-800">
+          <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
+            ⚡ 2x Points Booster Cost
+          </label>
+          <p className="text-xs text-gray-500">
+            Price users pay to activate 2x points multiplier
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              value={formData.boosterCost}
+              onChange={(e) => handleChange("boosterCost", e.target.value)}
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm sm:text-base dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent/50"
+            />
+            <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400 whitespace-nowrap">💰 coins</span>
           </div>
         </div>
 
         {/* 3rd Scorer Slot */}
-        <div className="space-y-3 border-b border-gray-200 pb-6 dark:border-gray-800">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              🔵 3rd Scorer Slot Cost
-            </label>
-            <p className="text-xs text-gray-500 mb-3">
-              Price users pay to unlock the ability to predict a 3rd goal scorer
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                value={formData.thirdScorerCost}
-                onChange={(e) => handleChange("thirdScorerCost", e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              />
-              <span className="text-gray-600 dark:text-gray-400">💰 coins</span>
-            </div>
+        <div className="space-y-2 sm:space-y-3 border-b border-gray-200 pb-4 sm:pb-6 dark:border-gray-800">
+          <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
+            🔵 3rd Scorer Slot Cost
+          </label>
+          <p className="text-xs text-gray-500">
+            Price users pay to unlock the ability to predict a 3rd goal scorer
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              value={formData.thirdScorerCost}
+              onChange={(e) => handleChange("thirdScorerCost", e.target.value)}
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm sm:text-base dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent/50"
+            />
+            <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400 whitespace-nowrap">💰 coins</span>
           </div>
         </div>
 
         {/* 4th Scorer Slot */}
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              🔵 4th Scorer Slot Cost
-            </label>
-            <p className="text-xs text-gray-500 mb-3">
-              Price users pay to unlock the ability to predict a 4th goal scorer
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                value={formData.fourthScorerCost}
-                onChange={(e) => handleChange("fourthScorerCost", e.target.value)}
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              />
-              <span className="text-gray-600 dark:text-gray-400">💰 coins</span>
-            </div>
+        <div className="space-y-2 sm:space-y-3">
+          <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
+            🔵 4th Scorer Slot Cost
+          </label>
+          <p className="text-xs text-gray-500">
+            Price users pay to unlock the ability to predict a 4th goal scorer
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              value={formData.fourthScorerCost}
+              onChange={(e) => handleChange("fourthScorerCost", e.target.value)}
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm sm:text-base dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent/50"
+            />
+            <span className="text-sm sm:text-base text-gray-600 dark:text-gray-400 whitespace-nowrap">💰 coins</span>
           </div>
         </div>
       </div>
 
       {/* Summary */}
-      <div className="card bg-accent/5 border-l-4 border-accent p-4 space-y-2">
-        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+      <div className="card bg-accent/5 border-l-4 border-accent p-4 sm:p-6 space-y-2 sm:space-y-3">
+        <p className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
           Current Configuration
         </p>
-        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+        <div className="space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
           <p>• Booster: <span className="font-semibold text-accent">{formData.boosterCost}</span> coins</p>
           <p>• 3rd Scorer: <span className="font-semibold text-accent">{formData.thirdScorerCost}</span> coins</p>
           <p>• 4th Scorer: <span className="font-semibold text-accent">{formData.fourthScorerCost}</span> coins</p>
@@ -208,18 +202,18 @@ export default function AdminRewardsPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 rounded-lg bg-accent px-4 py-2 font-medium text-white hover:bg-accent/90 disabled:opacity-50 transition-colors"
+          className="flex-1 rounded-lg bg-accent px-4 py-3 sm:py-2.5 text-sm sm:text-base font-medium text-white hover:bg-accent/90 disabled:opacity-50 transition-colors touch-none"
         >
           {saving ? "Saving..." : "💾 Save Changes"}
         </button>
         <button
           onClick={fetchConfig}
           disabled={saving}
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-3 sm:py-2.5 text-sm sm:text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors touch-none"
         >
           ↻ Reset
         </button>

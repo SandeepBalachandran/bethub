@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SiteHeader } from "@/components/SiteHeader";
+import { PopupManager } from "@/components/PopupManager";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -29,6 +30,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col pb-16 sm:pb-0">
         <ThemeProvider attribute="class" defaultTheme="light">
+          <PopupManager />
           <SiteHeader />
           {children}
           <Toaster richColors position="top-center" />

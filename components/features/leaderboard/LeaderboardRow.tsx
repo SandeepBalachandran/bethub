@@ -66,6 +66,7 @@ export function LeaderboardRow({
   moneyBalance,
   streak = 0,
   rankChange = 0,
+  highlightedMetric = "points",
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
@@ -74,6 +75,7 @@ export function LeaderboardRow({
   readonly streak?: number;
   /** Positive = moved up this many spots since the last finished match, negative = moved down. */
   readonly rankChange?: number;
+  readonly highlightedMetric?: "points" | "money";
 }) {
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
@@ -134,15 +136,33 @@ export function LeaderboardRow({
         </div>
 
         <div className="flex flex-col items-end gap-0.5 sm:gap-1">
-          <div>
-            <p className="gradient-text text-lg sm:text-xl font-extrabold">{entry.total}</p>
-            <p className="text-[8px] sm:text-[10px] text-gray-400">pts</p>
-          </div>
-          <div className={`text-right text-[8px] sm:text-[10px] font-semibold ${
-            moneyBalance >= 0 ? "text-success" : "text-danger"
-          }`}>
-            <p>{formatMoney(moneyBalance)}</p>
-          </div>
+          {highlightedMetric === "points" ? (
+            <>
+              <div className={`rounded-lg px-2 py-1 transition-all ${
+                highlightedMetric === "points" ? "bg-accent/10" : ""
+              }`}>
+                <p className="gradient-text text-lg sm:text-xl font-extrabold">{entry.total}</p>
+                <p className="text-[8px] sm:text-[10px] text-gray-400">pts</p>
+              </div>
+              <div className={`text-right text-[8px] sm:text-[10px] font-semibold rounded-lg px-2 py-1 transition-all ${
+                moneyBalance >= 0 ? "text-success" : "text-danger"
+              }`}>
+                <p>{formatMoney(moneyBalance)}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={`text-right transition-all ${
+                moneyBalance >= 0 ? "text-success" : "text-danger"
+              } rounded-lg px-2 py-1 bg-success/10`}>
+                <p className="text-lg sm:text-xl font-extrabold">{formatMoney(moneyBalance)}</p>
+                <p className="text-[8px] sm:text-[10px] text-gray-400">💰</p>
+              </div>
+              <div className={`rounded-lg px-2 py-1 transition-all`}>
+                <p className="text-[8px] sm:text-[10px] font-semibold text-gray-500">{entry.total} pts</p>
+              </div>
+            </>
+          )}
         </div>
       </motion.div>
     </Link>
