@@ -7,7 +7,6 @@ export type MostPickedPlayer = {
   photoUrl?: string | null;
   teamId: string;
   pickCount: number;
-  lastPickedAt: Date;
 };
 
 /**
@@ -33,7 +32,6 @@ export async function getMostPickedPlayers(
   const teamIds = [match.homeTeamId, match.awayTeamId];
 
   // Aggregate: count how many times each player was picked in finished matches
-  // and get the most recent pick timestamp
   const results = await prisma.predictionScorer.groupBy({
     by: ["playerId"],
     where: {
@@ -49,12 +47,9 @@ export async function getMostPickedPlayers(
     _count: {
       playerId: true,
     },
-    _max: {
-      createdAt: true,
-    },
     orderBy: {
-      _max: {
-        createdAt: "desc",
+      _count: {
+        playerId: "desc",
       },
     },
     take: limit,
@@ -68,7 +63,6 @@ export async function getMostPickedPlayers(
 
   // Map results with player details
   const pickCountMap = new Map(results.map((r) => [r.playerId, r._count.playerId]));
-  const lastPickedMap = new Map(results.map((r) => [r.playerId, r._max.createdAt]));
 
   const result: MostPickedPlayer[] = playerIds
     .map((id) => {
@@ -81,7 +75,6 @@ export async function getMostPickedPlayers(
         photoUrl: player.photoUrl,
         teamId: player.teamId,
         pickCount: pickCountMap.get(id) || 0,
-        lastPickedAt: lastPickedMap.get(id) || new Date(),
       } as MostPickedPlayer;
     })
     .filter((p): p is MostPickedPlayer => p !== null);
