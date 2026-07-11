@@ -54,7 +54,7 @@ export function LeaderboardList({
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3 sm:space-y-4">
         {sorted.map((entry, index) => {
           const rank = index + 1;
           const previousRank = previousRankByUserId.get(entry.userId) ?? rank;

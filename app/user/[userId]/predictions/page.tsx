@@ -37,8 +37,21 @@ export default async function UserPredictionsPage({
   // Fetch the user whose predictions we're viewing
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, email: true, coinBalance: true },
   });
+
+  // Fetch user's coin transactions to see what they've unlocked
+  const unlockedRewards = await prisma.coinTransaction.findMany({
+    where: {
+      userId,
+      type: "spend",
+      reason: { in: ["3rd_scorer", "4th_scorer"] },
+    },
+    select: { reason: true },
+  });
+
+  const has3rdScorer = unlockedRewards.some((r) => r.reason === "3rd_scorer");
+  const has4thScorer = unlockedRewards.some((r) => r.reason === "4th_scorer");
 
   if (!user) {
     return (
@@ -136,6 +149,27 @@ export default async function UserPredictionsPage({
         </p>
       </div>
 
+      {/* User's Unlocked Rewards */}
+      {(has3rdScorer || has4thScorer) && (
+        <div className="card space-y-3 bg-accent/5 border-l-4 border-accent p-4 sm:p-5">
+          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+            UNLOCKED FEATURES
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {has3rdScorer && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1.5 text-xs sm:text-sm font-semibold text-success">
+                🔵 3rd Scorer Slot
+              </span>
+            )}
+            {has4thScorer && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1.5 text-xs sm:text-sm font-semibold text-success">
+                🔵 4th Scorer Slot
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {predictions.length > 0 && (
         <div className="card space-y-3 bg-gradient-to-r from-accent/10 to-secondary/10 border-l-4 border-accent p-5 sm:p-6">
           <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400">
@@ -212,34 +246,55 @@ export default async function UserPredictionsPage({
                     className="card space-y-4 border-l-4 border-accent/30 shadow-sm p-5 sm:p-6"
                   >
                     {/* Match Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
-                      <span className="flex min-w-0 flex-wrap items-center gap-2 font-medium">
-                        <TeamFlag
-                          flag={prediction.match.homeTeam.flag}
-                          name={prediction.match.homeTeam.name}
-                        />
-                        <span className="wrap-break-word">
-                          {prediction.match.homeTeam.name} vs{" "}
-                          {prediction.match.awayTeam.name}
+                    <div className="flex flex-col gap-2 pb-1">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="flex min-w-0 flex-wrap items-center gap-2 font-medium">
+                          <TeamFlag
+                            flag={prediction.match.homeTeam.flag}
+                            name={prediction.match.homeTeam.name}
+                          />
+                          <span className="wrap-break-word">
+                            {prediction.match.homeTeam.name} vs{" "}
+                            {prediction.match.awayTeam.name}
+                          </span>
+                          <TeamFlag
+                            flag={prediction.match.awayTeam.flag}
+                            name={prediction.match.awayTeam.name}
+                          />
                         </span>
-                        <TeamFlag
-                          flag={prediction.match.awayTeam.flag}
-                          name={prediction.match.awayTeam.name}
-                        />
-                      </span>
-                      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                        <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
-                          +{points} pts
-                        </span>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            money >= 0
-                              ? "bg-success/10 text-success"
-                              : "bg-danger/10 text-danger"
-                          }`}
-                        >
-                          {money >= 0 ? "+" : ""}{formatMoney(money)}
-                        </span>
+                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+                            +{points} pts
+                          </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              money >= 0
+                                ? "bg-success/10 text-success"
+                                : "bg-danger/10 text-danger"
+                            }`}
+                          >
+                            {money >= 0 ? "+" : ""}{formatMoney(money)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Used Rewards Badges */}
+                      <div className="flex flex-wrap gap-2">
+                        {prediction.usedPointsBooster && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-highlight/20 px-2.5 py-1 text-xs font-semibold text-highlight-foreground dark:text-highlight">
+                            ⚡ 2x Booster
+                          </span>
+                        )}
+                        {prediction.scorers.length >= 3 && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-semibold text-success">
+                            🔵 3rd Scorer
+                          </span>
+                        )}
+                        {prediction.scorers.length >= 4 && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-semibold text-success">
+                            🔵 4th Scorer
+                          </span>
+                        )}
                       </div>
                     </div>
 

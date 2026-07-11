@@ -53,6 +53,9 @@ export default async function AdminDashboardPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold gradient-text">Admin Dashboard</h1>
         <div className="flex flex-wrap gap-2 text-sm">
+          <Link href="/admin/sync" className="rounded-full bg-success/10 px-3 py-1 text-success">
+            Sync results
+          </Link>
           <Link href="/admin/matches" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
             Manage matches
           </Link>

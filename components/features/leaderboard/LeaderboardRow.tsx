@@ -87,7 +87,7 @@ export function LeaderboardRow({
         layout
         layoutId={entry.userId}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className={`card card-interactive flex items-center gap-2 sm:gap-3 p-2 sm:p-3 ${
+        className={`card card-interactive mb-4 flex items-center gap-2 sm:gap-3 p-2 sm:p-3 ${
           isCurrentUser ? "border-highlight bg-highlight/10" : ""
         } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
       >
