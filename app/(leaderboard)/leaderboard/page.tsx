@@ -12,10 +12,11 @@ const ROUND_LABELS: Record<Round, string> = {
   ROUND_OF_16: "Round of 16",
   QUARTER_FINALS: "Quarter Finals",
   SEMI_FINALS: "Semi Finals",
+  THIRD_PLACE: "Third Place Play-off",
   FINAL: "Final",
 };
 
-const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
+const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "THIRD_PLACE", "FINAL"];
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();

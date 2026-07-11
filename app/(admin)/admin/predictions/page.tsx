@@ -7,12 +7,13 @@ import { RemindMissingButton } from "@/components/features/admin/RemindMissingBu
 import { isMatchLocked } from "@/lib/match-lock";
 import type { Round } from "@prisma/client";
 
-const ROUND_ORDER: Round[] = ["FINAL", "SEMI_FINALS", "QUARTER_FINALS", "ROUND_OF_16"];
+const ROUND_ORDER: Round[] = ["FINAL", "THIRD_PLACE", "SEMI_FINALS", "QUARTER_FINALS", "ROUND_OF_16"];
 
 const ROUND_LABELS: Record<Round, string> = {
   ROUND_OF_16: "Round of 16",
   QUARTER_FINALS: "Quarter Finals",
   SEMI_FINALS: "Semi Finals",
+  THIRD_PLACE: "Third Place Play-off",
   FINAL: "Final",
 };
 
@@ -20,6 +21,7 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
   ROUND_OF_16: "bg-accent/15 text-accent",
   QUARTER_FINALS: "bg-secondary/15 text-secondary",
   SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",
+  THIRD_PLACE: "bg-warning/15 text-warning",
   FINAL: "bg-danger/15 text-danger",
 };
 

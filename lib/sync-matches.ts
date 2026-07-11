@@ -6,6 +6,7 @@ const STAGE_TO_ROUND: Record<string, Round> = {
   LAST_16: Round.ROUND_OF_16,
   QUARTER_FINALS: Round.QUARTER_FINALS,
   SEMI_FINALS: Round.SEMI_FINALS,
+  THIRD_PLACE: Round.THIRD_PLACE,
   FINAL: Round.FINAL,
 };
 
