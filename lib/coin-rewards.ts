@@ -52,12 +52,12 @@ async function getUnlockTiers() {
 
 function getDayNumber(date: Date): number {
   const start = new Date(REWARD_CAMPAIGN_START);
-  start.setHours(0, 0, 0, 0);
+  const startUTC = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
 
   const current = new Date(date);
-  current.setHours(0, 0, 0, 0);
+  const currentUTC = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate()));
 
-  const diff = current.getTime() - start.getTime();
+  const diff = currentUTC.getTime() - startUTC.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   return days + 1; // 1-indexed
 }
