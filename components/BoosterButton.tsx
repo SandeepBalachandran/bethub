@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatMoney } from "@/lib/format-money";
+import { BoosterActivatedModal } from "@/components/BoosterActivatedModal";
 
 interface BoosterButtonProps {
   predictionId: string;
@@ -19,6 +20,7 @@ export function BoosterButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boosterCost, setBoosterCost] = useState(100); // Default fallback
+  const [showActivatedModal, setShowActivatedModal] = useState(false);
   const canActivate = !isUsed && userCoins >= boosterCost;
 
   useEffect(() => {
@@ -64,6 +66,7 @@ export function BoosterButton({
         return;
       }
 
+      setShowActivatedModal(true);
       onActivated?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error activating booster");
@@ -84,31 +87,38 @@ export function BoosterButton({
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <button
-        onClick={handleActivate}
-        disabled={!canActivate || loading}
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
-          canActivate
-            ? "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50 cursor-pointer"
-            : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-        } ${loading ? "opacity-50" : ""}`}
-      >
-        <span className="text-lg">⚡</span>
-        <span>
-          {loading ? "Activating..." : `2x Booster (${boosterCost} 💰)`}
-        </span>
-      </button>
-      {error && (
-        <p className="text-xs text-danger">
-          {error}
-        </p>
-      )}
-      {!canActivate && !isUsed && userCoins < boosterCost && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Need {boosterCost - userCoins} more coins
-        </p>
-      )}
-    </div>
+    <>
+      <BoosterActivatedModal
+        isOpen={showActivatedModal}
+        onClose={() => setShowActivatedModal(false)}
+      />
+
+      <div className="flex flex-col gap-1">
+        <button
+          onClick={handleActivate}
+          disabled={!canActivate || loading}
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+            canActivate
+              ? "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50 cursor-pointer"
+              : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+          } ${loading ? "opacity-50" : ""}`}
+        >
+          <span className="text-lg">⚡</span>
+          <span>
+            {loading ? "Activating..." : `2x Booster (${boosterCost} 💰)`}
+          </span>
+        </button>
+        {error && (
+          <p className="text-xs text-danger">
+            {error}
+          </p>
+        )}
+        {!canActivate && !isUsed && userCoins < boosterCost && (
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Need {boosterCost - userCoins} more coins
+          </p>
+        )}
+      </div>
+    </>
   );
 }
