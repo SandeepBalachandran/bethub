@@ -38,7 +38,10 @@ export function BoosterButton({
     fetchCost();
   }, []);
 
-  const handleActivate = async () => {
+  const handleActivate = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (isUsed || loading) return;
 
     setLoading(true);

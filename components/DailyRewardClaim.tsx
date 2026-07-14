@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 interface RewardProgress {
   campaignActive: boolean;
@@ -44,6 +45,14 @@ export function DailyRewardClaim() {
       const data = await res.json();
 
       if (data.success) {
+        // Trigger confetti explosion
+        confetti({
+          particleCount: 80,
+          spread: 90,
+          origin: { y: 0.3 },
+          colors: ["#FFD700", "#FFA500", "#FF8C00", "#FFB347", "#FFAA00"],
+        });
+
         toast.success(`🎉 Claimed ${data.awarded} coins!`);
         setProgress((prev) =>
           prev

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import confetti from "canvas-confetti";
 
 interface BoosterActivatedModalProps {
   isOpen: boolean;
@@ -10,10 +11,15 @@ interface BoosterActivatedModalProps {
 export function BoosterActivatedModal({ isOpen, onClose }: BoosterActivatedModalProps) {
   useEffect(() => {
     if (isOpen) {
-      const timer = setTimeout(onClose, 3000);
-      return () => clearTimeout(timer);
+      // Trigger confetti explosion
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#FFD700", "#FFA500", "#FF8C00", "#FFB347"],
+      });
     }
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -40,7 +46,7 @@ export function BoosterActivatedModal({ isOpen, onClose }: BoosterActivatedModal
           onClick={onClose}
           className="w-full py-3 sm:py-4 px-4 rounded-lg bg-accent text-white font-semibold hover:bg-accent/90 transition-colors text-sm sm:text-base touch-none"
         >
-          Enjoy the match! 🎉
+          Oh Yeah! 🎉
         </button>
       </div>
     </div>
