@@ -1,13 +1,28 @@
 import { prisma } from "@/lib/prisma";
 
-const BOOSTER_COST = 100; // coins
 const BOOSTER_MULTIPLIER = 2;
+const DEFAULT_BOOSTER_COST = 100; // Fallback if config not found
+
+async function getBoosterCost(): Promise<number> {
+  try {
+    const config = await prisma.rewardConfig.findFirst();
+    if (config) {
+      return config.boosterCost;
+    }
+  } catch (error) {
+    console.error("Error fetching booster cost:", error);
+  }
+  return DEFAULT_BOOSTER_COST;
+}
 
 export async function canActivateBooster(userId: string): Promise<boolean> {
-  const coinBalance = await prisma.coinBalance.findUnique({
-    where: { userId },
-  });
-  return (coinBalance?.balance ?? 0) >= BOOSTER_COST;
+  const [coinBalance, boosterCost] = await Promise.all([
+    prisma.coinBalance.findUnique({
+      where: { userId },
+    }),
+    getBoosterCost(),
+  ]);
+  return (coinBalance?.balance ?? 0) >= boosterCost;
 }
 
 export async function activateBooster(
@@ -15,12 +30,14 @@ export async function activateBooster(
   predictionId: string
 ): Promise<{ success: boolean; reason?: string }> {
   try {
+    const boosterCost = await getBoosterCost();
+
     // Check if user has enough coins
     const coinBalance = await prisma.coinBalance.findUnique({
       where: { userId },
     });
 
-    if (!coinBalance || coinBalance.balance < BOOSTER_COST) {
+    if (!coinBalance || coinBalance.balance < boosterCost) {
       return { success: false, reason: "insufficient_coins" };
     }
 
@@ -39,7 +56,7 @@ export async function activateBooster(
 
     // Update prediction and deduct coins
     const balanceBefore = coinBalance.balance;
-    const balanceAfter = balanceBefore - BOOSTER_COST;
+    const balanceAfter = balanceBefore - boosterCost;
 
     await Promise.all([
       prisma.prediction.update({
@@ -48,14 +65,14 @@ export async function activateBooster(
       }),
       prisma.coinBalance.update({
         where: { userId },
-        data: { balance: { decrement: BOOSTER_COST } },
+        data: { balance: { decrement: boosterCost } },
       }),
       prisma.coinTransaction.create({
         data: {
           userId,
           type: "spend",
           reason: "booster",
-          amount: BOOSTER_COST,
+          amount: boosterCost,
           balanceBefore,
           balanceAfter,
           relatedId: predictionId,
@@ -84,7 +101,4 @@ export function applyPointsBoosterMultiplier(
   return value;
 }
 
-export const BOOSTER_CONFIG = {
-  cost: BOOSTER_COST,
-  multiplier: BOOSTER_MULTIPLIER,
-};
+export const BOOSTER_MULTIPLIER_VALUE = BOOSTER_MULTIPLIER;
