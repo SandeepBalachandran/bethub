@@ -18,6 +18,10 @@ let cachedUnlockTiers = { ...DEFAULT_UNLOCK_TIERS };
 let cacheTimestamp = 0;
 const CACHE_DURATION = 60000; // 1 minute cache
 
+export function invalidateUnlockTiersCache() {
+  cacheTimestamp = 0;
+}
+
 async function getUnlockTiers() {
   const now = Date.now();
   if (now - cacheTimestamp < CACHE_DURATION) {
