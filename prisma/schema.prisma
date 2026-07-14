@@ -38,6 +38,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  emailVerified              DateTime?
+  verificationToken          String?
+  verificationTokenExpires   DateTime?
+  resetToken                 String?
+  resetTokenExpires          DateTime?
+
   predictions       Prediction[]
   pushSubscriptions PushSubscription[]
   coinBalance       CoinBalance?

@@ -354,7 +354,68 @@ Push notifications (Milestone 15) are sent to all subscribed users by default. T
 
 ---
 
-## Summary: All 24 Milestones
+## Milestone 25: Self-Signup with Email Verification
+
+### Context
+
+The original spec (Milestone 1) specified admin-provisioned accounts only ("no signup"). However, the codebase now supports email verification infrastructure (via Resend), and allowing users to self-register with email verification improves UX and removes admin overhead. This milestone adds a full signup flow: user registers email/password, receives verification email, verifies link, then logs in.
+
+### Scope
+
+1. **Prisma schema additions** (`schema.prisma`):
+   - `User.emailVerified: DateTime?` — null until email is verified.
+   - `User.verificationToken: String? @unique` — one-time token for email verification.
+   - `User.verificationTokenExpires: DateTime?` — token expiry time.
+   - `User.resetToken: String? @unique` — optional, for future password reset.
+   - `User.resetTokenExpires: DateTime?` — optional, for future password reset.
+
+2. **Email & token services**:
+   - `lib/email.ts` — `sendVerificationEmail(email, token, appUrl)` using Resend API.
+   - `lib/verification-token.ts` — `generateVerificationToken()`, `createVerificationToken(email)`, `verifyEmailToken(token)`, `invalidateToken(email)`.
+   - `lib/password.ts` — `validatePasswordStrength(password)` enforcing ≥8 chars, uppercase, lowercase, number.
+
+3. **Server actions** (`actions/auth.ts` additions):
+   - `signup(formData)` — validate email/password/confirm, check duplicate email, hash password, create user, generate token, send verification email, return success/error.
+   - `verifyEmail(token)` — validate token, check expiry, mark `emailVerified`, clear token fields, return user.
+   - `resendVerificationEmail(email)` — check user exists + not yet verified, invalidate old token, create new token, send email.
+
+4. **UI pages**:
+   - `app/(auth)/signup/page.tsx` — signup form (name, email, password, confirm password), client-side validation, error/success messages, link to login.
+   - `app/(auth)/verify-email/page.tsx` — displays "Checking your email..." while verifying token from URL query param, then redirects to login on success or shows error.
+
+5. **Auth flow modifications**:
+   - `lib/auth.ts` — update Credentials provider to check `emailVerified !== null` before allowing login (unverified users blocked).
+   - `proxy.ts` — no changes needed; signup/verify-email routes already public.
+
+6. **Environment variables**:
+   - `AUTH_VERIFICATION_TOKEN_EXPIRY_HOURS` (default: 24) — token lifetime.
+   - `RESEND_API_KEY` — already configured in Milestone 15 (push notifications).
+   - `RESEND_FROM_EMAIL` — already configured.
+   - `NEXT_PUBLIC_APP_URL` — frontend verification link base (e.g., `http://localhost:3000`).
+
+### Key files
+
+- `prisma/schema.prisma` — User model additions.
+- `lib/email.ts`, `lib/verification-token.ts`, `lib/password.ts` — core services.
+- `actions/auth.ts` — signup/verifyEmail/resendVerificationEmail.
+- `app/(auth)/signup/page.tsx`, `app/(auth)/verify-email/page.tsx` — UI.
+- `lib/auth.ts` — login gate check for `emailVerified`.
+
+### Verification
+
+1. Signup form validation — submit with invalid email/weak password, confirm errors displayed.
+2. Duplicate email — register once, try registering same email again, confirm "Email already registered" error.
+3. Email verification — register new user, confirm email received, click verification link, confirm redirected to login and can now sign in.
+4. Token expiry — manually set token expiry to past time in DB, try to verify, confirm "Token expired" error.
+5. Unverified login block — register user, try signing in before verifying email, confirm login fails with "Please verify your email" message.
+6. Resend email — click "Resend" on verify page, confirm new email sent and link works.
+7. `npx tsc --noEmit` and `npm run build` — clean.
+
+**Status:** 🔄 Ready for implementation (infrastructure in place; signup pages/actions not yet written).
+
+---
+
+## Summary: All 25 Milestones
 
 | # | Title | Status |
 |---|-------|--------|
@@ -368,6 +429,7 @@ Push notifications (Milestone 15) are sent to all subscribed users by default. T
 | 22 | Live Match Updates During Play | ✅ (partial) |
 | 23 | Most-Picked Players & Trending | ✅ |
 | 24 | Notification Eligibility | ✅ |
+| 25 | Self-Signup with Email Verification | 🔄 Ready for implementation |
 
 ---
 
@@ -396,7 +458,9 @@ Push notifications (Milestone 15) are sent to all subscribed users by default. T
 
 ## Known Limitations & Future Work
 
-- Signup page — no self-registration (admin-provisioned only); would require email verification flow.
+- Password reset flow — email-based reset (Milestone 25 infrastructure supports it; recovery action not yet implemented).
+- OAuth integration — Google/GitHub login (would reduce friction vs. email/password registration).
+- Admin account management — no UI to revoke user accounts or reset passwords from admin panel.
 - Password reset — no "forgot password" UI; admin resets manually via `/admin/users`.
 - OAuth — not wired up (Google/GitHub); only Credentials provider.
 - Scheduled notifications — "lock in 30 min" reminder would need a job scheduler; currently sent manually.

@@ -2,18 +2,21 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { login, type LoginState } from "@/actions/auth";
+import { signup, type SignupState } from "@/actions/auth";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Eye, EyeOff } from "lucide-react";
 
-const initialState: LoginState = {};
+const initialState: SignupState = {};
 
-export default function LoginPage() {
-  const [state, formAction, pending] = useActionState(login, initialState);
+export default function SignupPage() {
+  const [state, formAction, pending] = useActionState(signup, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,11 +34,27 @@ export default function LoginPage() {
         action={handleSubmit}
         className="card w-full max-w-sm space-y-4 p-6 shadow-2xl"
       >
-        <LoadingOverlay show={pending} label="Signing in..." />
+        <LoadingOverlay show={pending} label="Creating account..." />
         <div className="text-center">
           <span className="text-3xl">🏆</span>
-          <h1 className="text-xl font-bold gradient-text">Sign in</h1>
+          <h1 className="text-xl font-bold gradient-text">Create Account</h1>
           <p className="text-xs text-gray-500">Bettman</p>
+        </div>
+
+        <div className="space-y-1">
+          <label htmlFor="name" className="text-sm font-medium">
+            Full Name
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="John Doe"
+            className="input-pill w-full"
+          />
         </div>
 
         <div className="space-y-1">
@@ -66,7 +85,7 @@ export default function LoginPage() {
               required
               value={formData.password}
               onChange={handleChange}
-              placeholder="Your password"
+              placeholder="At least 8 characters"
               className="input-pill w-full pr-10"
             />
             <button
@@ -78,41 +97,62 @@ export default function LoginPage() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+          <p className="text-xs text-gray-500">
+            Must contain uppercase, lowercase, and number
+          </p>
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="remember" />
-          Remember me
-        </label>
+        <div className="space-y-1">
+          <label htmlFor="confirmPassword" className="text-sm font-medium">
+            Confirm Password
+          </label>
+          <div className="relative">
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm password"
+              className="input-pill w-full pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
 
         {state.error && (
           <div className="rounded-lg bg-danger/10 p-3 text-sm text-danger" role="alert">
             {state.error}
-            {state.error.includes("Email not verified") && (
-              <p className="text-xs mt-1">
-                Check your inbox for the verification link, or{" "}
-                <Link href="/signup" className="underline hover:no-underline">
-                  try signing up again
-                </Link>
-                .
-              </p>
-            )}
+          </div>
+        )}
+
+        {state.success && (
+          <div className="rounded-lg bg-success/10 p-3 text-sm text-success" role="status">
+            {state.message}
           </div>
         )}
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || state.success}
           className="gradient-header btn w-full py-2.5 text-sm font-semibold text-white disabled:opacity-50"
         >
-          {pending ? "Signing in..." : "Sign in"}
+          {pending ? "Creating account..." : "Create Account"}
         </button>
 
         <div className="text-center">
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-semibold text-accent hover:underline">
-              Create one
+            Already have an account?{" "}
+            <Link href="/login" className="font-semibold text-accent hover:underline">
+              Sign in
             </Link>
           </p>
         </div>
