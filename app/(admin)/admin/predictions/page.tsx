@@ -103,14 +103,26 @@ export default async function AdminPredictionsPage() {
                       <p className="text-xs text-gray-500">No predictions submitted yet.</p>
                     ) : (
                       <ul className="space-y-1.5 text-xs">
-                        {match.predictions.map((prediction) => (
+                        {match.predictions.map((prediction) => {
+                          const has3rdScorer = prediction.scorers.length >= 3;
+                          const has4thScorer = prediction.scorers.length >= 4;
+                          const hasBooster = prediction.usedPointsBooster;
+
+                          return (
                           <li
                             key={prediction.id}
                             className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 rounded bg-gray-50 dark:bg-white/5 p-2 sm:p-2.5"
                           >
-                            <span className="font-semibold text-secondary line-clamp-1">
-                              {prediction.user.name}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className="font-semibold text-secondary line-clamp-1">
+                                {prediction.user.name}
+                              </span>
+                              <div className="flex gap-0.5 items-center">
+                                {hasBooster && <span title="2x Booster used">⚡</span>}
+                                {has3rdScorer && <span title="3rd Scorer reward used">🔵</span>}
+                                {has4thScorer && <span title="4th Scorer reward used">🔴</span>}
+                              </div>
+                            </div>
                             <span className="text-gray-500 hidden sm:inline">→</span>
                             <span className="line-clamp-1">
                               Winner: <span className="font-medium text-accent">{prediction.winnerTeam.name}</span>
@@ -135,7 +147,8 @@ export default async function AdminPredictionsPage() {
                               )}
                             </span>
                           </li>
-                        ))}
+                          );
+                        })}
                       </ul>
                     )}
 

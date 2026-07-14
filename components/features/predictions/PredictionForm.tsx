@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { submitPrediction } from "@/actions/prediction";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -51,13 +51,28 @@ export function PredictionForm({
     initialScorerPlayerIds[2] ?? "",
     initialScorerPlayerIds[3] ?? "",
   ]);
+  const [costFor3rdScorer, setCostFor3rdScorer] = useState(50);
+  const [costFor4thScorer, setCostFor4thScorer] = useState(150);
 
   const scorerCount = scorers.filter(Boolean).length;
   const maxScorerIndex = 3; // Allow up to 4 scorers
 
-  // Calculate cost based on scorer count
-  const costFor3rdScorer = 50;
-  const costFor4thScorer = 150;
+  // Fetch dynamic scorer costs from config
+  useEffect(() => {
+    const fetchCosts = async () => {
+      try {
+        const response = await fetch("/api/admin/reward-config");
+        if (response.ok) {
+          const config = await response.json();
+          setCostFor3rdScorer(config.thirdScorerCost);
+          setCostFor4thScorer(config.fourthScorerCost);
+        }
+      } catch (error) {
+        console.error("Error fetching scorer costs:", error);
+      }
+    };
+    fetchCosts();
+  }, []);
   let predictedCost = 0;
   if (scorerCount === 3) {
     predictedCost = costFor3rdScorer;

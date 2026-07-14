@@ -83,6 +83,16 @@ export default function AdminRewardsPage() {
     }
   };
 
+  const handleReset = () => {
+    if (config) {
+      setFormData({
+        boosterCost: config.boosterCost,
+        thirdScorerCost: config.thirdScorerCost,
+        fourthScorerCost: config.fourthScorerCost,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -211,7 +221,7 @@ export default function AdminRewardsPage() {
           {saving ? "Saving..." : "💾 Save Changes"}
         </button>
         <button
-          onClick={fetchConfig}
+          onClick={handleReset}
           disabled={saving}
           className="flex-1 rounded-lg border border-gray-300 px-4 py-3 sm:py-2.5 text-sm sm:text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors touch-none"
         >

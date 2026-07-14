@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatMoney } from "@/lib/format-money";
 
 interface BoosterButtonProps {
@@ -18,7 +18,23 @@ export function BoosterButton({
 }: BoosterButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const canActivate = !isUsed && userCoins >= 100;
+  const [boosterCost, setBoosterCost] = useState(100); // Default fallback
+  const canActivate = !isUsed && userCoins >= boosterCost;
+
+  useEffect(() => {
+    const fetchCost = async () => {
+      try {
+        const response = await fetch("/api/admin/reward-config");
+        if (response.ok) {
+          const config = await response.json();
+          setBoosterCost(config.boosterCost);
+        }
+      } catch (error) {
+        console.error("Error fetching booster cost:", error);
+      }
+    };
+    fetchCost();
+  }, []);
 
   const handleActivate = async () => {
     if (isUsed || loading) return;
@@ -80,7 +96,7 @@ export function BoosterButton({
       >
         <span className="text-lg">⚡</span>
         <span>
-          {loading ? "Activating..." : `2x Booster (100 💰)`}
+          {loading ? "Activating..." : `2x Booster (${boosterCost} 💰)`}
         </span>
       </button>
       {error && (
@@ -88,9 +104,9 @@ export function BoosterButton({
           {error}
         </p>
       )}
-      {!canActivate && !isUsed && userCoins < 100 && (
+      {!canActivate && !isUsed && userCoins < boosterCost && (
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Need {100 - userCoins} more coins
+          Need {boosterCost - userCoins} more coins
         </p>
       )}
     </div>
