@@ -45,51 +45,56 @@ export function PushNotificationBanner({ isOpen, onClose }: PushNotificationBann
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 ${
-        isVisible ? "translate-y-0" : "translate-y-full"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out ${
+        isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       }`}
     >
-      <div className="mx-3 mb-4 sm:mx-6 sm:mb-6 rounded-lg border border-gray-200 bg-white p-4 sm:p-5 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          {/* Content */}
-          <div className="flex gap-3 flex-1">
-            <div className="shrink-0 text-2xl sm:text-3xl">🔔</div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
-                Never Miss a Prediction
-              </p>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                Get live alerts for matches and never forget to predict
-              </p>
+      {/* Top banner notification */}
+      <div className="w-full bg-gradient-to-r from-accent to-accent/80 shadow-lg">
+        <div className="mx-auto max-w-4xl px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Content - stacks on mobile */}
+            <div className="flex gap-2.5 flex-1 min-w-0">
+              <div className="shrink-0 text-xl sm:text-2xl mt-0.5">🔔</div>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-sm sm:text-base text-white leading-snug">
+                  Never Miss a Prediction
+                </p>
+                <p className="text-xs sm:text-sm text-white/90 mt-0.5">
+                  Get live alerts for matches and kickoff reminders
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 sm:gap-3 shrink-0">
+            {/* Actions - full width on mobile, row on desktop */}
+            <div className="flex gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                onClick={handleDismiss}
+                disabled={loading}
+                className="flex-1 sm:flex-none rounded-lg bg-white/20 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-white/30 transition-colors disabled:opacity-50 touch-none border border-white/20 hover:border-white/40 active:scale-95"
+              >
+                Later
+              </button>
+              <button
+                onClick={handleEnable}
+                disabled={loading}
+                className="flex-1 sm:flex-none rounded-lg bg-white px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-accent hover:bg-gray-100 transition-colors disabled:opacity-50 touch-none active:scale-95"
+              >
+                {loading ? "Enabling..." : "Enable 🔔"}
+              </button>
+            </div>
+
+            {/* Close X button */}
             <button
               onClick={handleDismiss}
               disabled={loading}
-              className="rounded-lg border border-gray-300 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 touch-none whitespace-nowrap"
+              className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-4 text-white/70 hover:text-white text-xl transition-colors disabled:opacity-50 touch-none active:scale-90"
+              aria-label="Close notification"
             >
-              Later
-            </button>
-            <button
-              onClick={handleEnable}
-              disabled={loading}
-              className="rounded-lg bg-accent px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-accent/90 transition-colors disabled:opacity-50 touch-none whitespace-nowrap"
-            >
-              {loading ? "Enabling..." : "Enable"}
+              ✕
             </button>
           </div>
         </div>
-
-        {/* Close X - optional extra */}
-        <button
-          onClick={handleDismiss}
-          className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg transition-colors"
-        >
-          ✕
-        </button>
       </div>
     </div>
   );
