@@ -38,7 +38,7 @@ export default async function PredictPage({
 
   const isLocked = isMatchLocked(match);
   const isTbd = match.homeTeam.fifaCode === "TBD" || match.awayTeam.fifaCode === "TBD";
-  const existingPrediction = match.predictions[0] ?? null;
+  const existingPrediction = match.predictions.find((p) => p.userId === user.id) ?? null;
 
   const coinBalance = await getUserCoinBalance(user.id);
   const mostPickedPlayers = await getMostPickedPlayers(matchId, 5);
