@@ -27,7 +27,7 @@ export function QuizFab() {
   useEffect(() => {
     const initializeQuiz = async () => {
       try {
-        // Fetch both quiz status and config in parallel
+        // Fetch quiz status and config in parallel
         const [statusRes, configRes] = await Promise.all([
           fetch("/api/quiz/status"),
           fetch("/api/quiz/config"),
@@ -36,6 +36,15 @@ export function QuizFab() {
         if (statusRes.ok) {
           const statusData = await statusRes.json();
           setHasPlayedToday(statusData.hasPlayedToday);
+
+          // If played today, fetch the results
+          if (statusData.hasPlayedToday) {
+            const resultsRes = await fetch("/api/quiz/results");
+            if (resultsRes.ok) {
+              const resultsData = await resultsRes.json();
+              setLastResults(resultsData);
+            }
+          }
         }
 
         if (configRes.ok) {

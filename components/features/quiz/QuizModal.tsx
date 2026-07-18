@@ -130,21 +130,22 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
 
   // Auto-advance when time runs out
   useEffect(() => {
-    if (state !== "quiz" || timeRemaining > 0) return;
+    if (state !== "quiz" || timeRemaining > 0 || submitting) return;
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
     // Mark as timed out
-    const currentQuestion = questions[currentQuestionIndex];
     setAnsweredInTime(prev => ({ ...prev, [currentQuestion.id]: false }));
 
-    // Move to next question
-    if (currentQuestionIndex < questions.length - 1) {
+    // Move to next question or submit
+    if (isLastQuestion) {
+      submitQuiz();
+    } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setTimeRemaining(secondsPerQuestion);
-    } else {
-      // Quiz complete, submit
-      submitQuiz();
     }
-  }, [state, timeRemaining, currentQuestionIndex, questions, secondsPerQuestion]);
+  }, [state, timeRemaining, currentQuestionIndex, questions, secondsPerQuestion, submitting]);
 
   // Trigger confetti when quiz is completed
   useEffect(() => {
@@ -174,15 +175,17 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
     setAnswers(prev => ({ ...prev, [currentQuestion.id]: optionIndex }));
     setAnsweredInTime(prev => ({ ...prev, [currentQuestion.id]: true }));
 
-    // Auto-advance after brief delay
+    const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+    // Auto-advance after brief delay, unless it's the last question
     setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
+      if (isLastQuestion) {
+        submitQuiz();
+      } else {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setTimeRemaining(secondsPerQuestion);
-      } else {
-        submitQuiz();
       }
-    }, 300);
+    }, isLastQuestion ? 0 : 300);
   };
 
   const submitQuiz = async () => {
@@ -206,21 +209,11 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
 
       const data = await response.json();
 
-      // Build detailed answer breakdown with questions
-      const detailedAnswers: QuizAnswer[] = questions.map(q => ({
-        questionId: q.id,
-        question: q.question,
-        options: q.options,
-        selectedIndex: answers[q.id] ?? null,
-        correctIndex: 0, // Will be filled by API data if needed
-        isCorrect: answers[q.id] === data.correctAnswers[q.id],
-      }));
-
       const quizResults = {
         correctCount: data.correctCount,
         coinsAwarded: data.coinsAwarded,
         newBalance: data.newBalance,
-        answers: data.detailedAnswers || detailedAnswers,
+        answers: data.detailedAnswers,
       };
       setResults(quizResults);
       setState("results");
@@ -231,6 +224,8 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
       });
     } catch (error) {
       console.error("Error submitting quiz:", error);
+      setError(error instanceof Error ? error.message : "Failed to submit quiz");
+      setState("error");
     } finally {
       setSubmitting(false);
     }
@@ -436,6 +431,15 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
           >
             Close
           </button>
+
+          {submitting && (
+            <div className="absolute inset-0 rounded-2xl bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Submitting...</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

@@ -102,6 +102,25 @@ async function seedPlayers() {
   );
 }
 
+async function seedQuizConfig() {
+  const config = await prisma.quizConfig.findFirst();
+
+  if (config) {
+    return;
+  }
+
+  await prisma.quizConfig.create({
+    data: {
+      questionsPerQuiz: 7,
+      secondsPerQuestion: 20,
+      completionCoins: 20,
+      coinsPerCorrect: 10,
+    },
+  });
+
+  console.log("Quiz config seeded.");
+}
+
 async function seedQuizQuestions() {
   const easyQuestions = [
     {
@@ -192,6 +211,7 @@ async function main() {
   await seedAdmin();
   // Removed: seedBettor() - demo user should not be created
   await seedPlayers();
+  await seedQuizConfig();
   await seedQuizQuestions();
 }
 

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PopupManager } from "@/components/PopupManager";
 import { QuizFab } from "@/components/QuizFab";
+import { DevelopmentBanner } from "@/components/DevelopmentBanner";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -31,6 +32,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col pb-16 sm:pb-0">
         <ThemeProvider attribute="class" defaultTheme="light">
+          <DevelopmentBanner />
           <PopupManager />
           <QuizFab />
           <SiteHeader />
