@@ -104,15 +104,15 @@ export async function RecentQuizAttemptsTable() {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="w-full">
+        <table className="w-full text-xs sm:text-sm">
           <thead>
             <tr className="border-b border-[color-mix(in_srgb,var(--foreground)_8%,transparent)]">
-              <th className="text-left py-2 px-2">Player</th>
-              <th className="text-center py-2 px-2">Date</th>
-              <th className="text-center py-2 px-2">Score</th>
-              <th className="text-center py-2 px-2">Coins</th>
-              <th className="text-right py-2 px-2">Answered in Time</th>
+              <th className="text-left py-2 px-1 sm:px-2">Player</th>
+              <th className="text-center py-2 px-1 sm:px-2 hidden sm:table-cell">Date</th>
+              <th className="text-center py-2 px-1 sm:px-2">Score</th>
+              <th className="text-center py-2 px-1 sm:px-2">Coins</th>
+              <th className="text-right py-2 px-1 sm:px-2">Time</th>
             </tr>
           </thead>
           <tbody>
@@ -141,25 +141,25 @@ export async function RecentQuizAttemptsTable() {
                   key={attempt.id}
                   className="border-b border-[color-mix(in_srgb,var(--foreground)_4%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_2%,transparent)]"
                 >
-                  <td className="py-2 px-2">
+                  <td className="py-2 px-1 sm:px-2 min-w-0">
                     <div>
-                      <p className="font-semibold">{attempt.user.name}</p>
-                      <p className="text-xs text-gray-500">{attempt.user.email}</p>
+                      <p className="font-semibold truncate text-xs sm:text-sm">{attempt.user.name}</p>
+                      <p className="text-xs text-gray-500 hidden sm:block">{attempt.user.email}</p>
                     </div>
                   </td>
-                  <td className="text-center py-2 px-2 text-gray-600 dark:text-gray-400">
-                    {attemptDate}
+                  <td className="text-center py-2 px-1 sm:px-2 text-gray-600 dark:text-gray-400 hidden sm:table-cell whitespace-nowrap">
+                    <span className="text-xs sm:text-sm">{attemptDate}</span>
                   </td>
-                  <td className="text-center py-2 px-2">
-                    <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getScoreColor()}`}>
-                      {attempt.correctCount}/7 ({scorePercentage}%)
+                  <td className="text-center py-2 px-1 sm:px-2">
+                    <span className={`inline-block px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-semibold whitespace-nowrap ${getScoreColor()}`}>
+                      {attempt.correctCount}/7
                     </span>
                   </td>
-                  <td className="text-center py-2 px-2 font-semibold text-accent">
-                    +{attempt.coinsAwarded}
+                  <td className="text-center py-2 px-1 sm:px-2 font-semibold text-accent">
+                    <span className="text-xs sm:text-sm">+{attempt.coinsAwarded}</span>
                   </td>
-                  <td className="text-right py-2 px-2 text-gray-600 dark:text-gray-400">
-                    {answeredInTime} / 7
+                  <td className="text-right py-2 px-1 sm:px-2 text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                    {answeredInTime}/7
                   </td>
                 </tr>
               );

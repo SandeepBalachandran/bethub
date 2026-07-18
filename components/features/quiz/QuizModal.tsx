@@ -30,12 +30,13 @@ interface QuizAnswer {
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onQuizCompleted?: () => void;
   initialConfig?: QuizConfig | null;
 }
 
 type QuizState = "preview" | "loading" | "quiz" | "results" | "error";
 
-export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
+export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: QuizModalProps) {
   const [state, setState] = useState<QuizState>("preview");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [config, setConfig] = useState<QuizConfig | null>(initialConfig || null);
@@ -222,6 +223,7 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
         answers: data.detailedAnswers || detailedAnswers,
       });
       setState("results");
+      onQuizCompleted?.();
     } catch (error) {
       console.error("Error submitting quiz:", error);
     } finally {

@@ -84,6 +84,8 @@ export function QuizFab() {
         isOpen={isOpen}
         onClose={() => {
           setIsOpen(false);
+        }}
+        onQuizCompleted={() => {
           setHasPlayedToday(true);
         }}
         initialConfig={quizConfig}
