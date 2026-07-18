@@ -120,9 +120,9 @@ export async function RecentQuizAttemptsTable() {
               const scorePercentage = Math.round(
                 (attempt.correctCount / 7) * 100
               );
-              const createdDate = new Date(attempt.createdAt).toLocaleDateString(
+              const attemptDate = new Date(attempt.createdAt).toLocaleString(
                 "en-US",
-                { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
+                { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }
               );
 
               const getScoreColor = () => {
@@ -148,7 +148,7 @@ export async function RecentQuizAttemptsTable() {
                     </div>
                   </td>
                   <td className="text-center py-2 px-2 text-gray-600 dark:text-gray-400">
-                    {createdDate}
+                    {attemptDate}
                   </td>
                   <td className="text-center py-2 px-2">
                     <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getScoreColor()}`}>

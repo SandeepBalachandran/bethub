@@ -60,7 +60,7 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
             {match.round}
           </span>
           <span className="text-xs text-gray-500 whitespace-nowrap">
-            {new Date(match.kickoffTime).toLocaleDateString()} {new Date(match.kickoffTime).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+            {new Date(match.kickoffTime).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
         <span className="text-xs font-medium text-gray-500 self-start sm:self-auto">{match.status}</span>

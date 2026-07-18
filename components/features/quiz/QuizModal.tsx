@@ -239,74 +239,74 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 backdrop-blur-sm p-4 sm:p-0">
-        <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="card rounded-2xl p-3 sm:p-5 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
           <div className="text-center">
-            <p className="text-4xl sm:text-5xl mb-3">⚽</p>
-            <h3 className="text-xl sm:text-2xl font-bold mb-2">Daily Football Quiz</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-3xl sm:text-4xl mb-2">⚽</p>
+            <h3 className="text-lg sm:text-xl font-bold mb-1">Daily Football Quiz</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               Test your football knowledge and earn coins!
             </p>
           </div>
 
           {config && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-accent/10 rounded-lg">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-accent/10 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">❓</span>
-                  <span className="text-sm font-medium">Questions</span>
+                  <span className="text-lg sm:text-xl">❓</span>
+                  <span className="text-xs sm:text-sm font-medium">Questions</span>
                 </div>
-                <span className="text-lg font-bold text-accent">{config.questionsPerQuiz}</span>
+                <span className="text-base sm:text-lg font-bold text-accent">{config.questionsPerQuiz}</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-highlight/10 rounded-lg">
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-highlight/10 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">⏱️</span>
-                  <span className="text-sm font-medium">Time per question</span>
+                  <span className="text-lg sm:text-xl">⏱️</span>
+                  <span className="text-xs sm:text-sm font-medium">Time per question</span>
                 </div>
-                <span className="text-lg font-bold text-highlight-foreground dark:text-highlight">
+                <span className="text-base sm:text-lg font-bold text-highlight-foreground dark:text-highlight">
                   {config.secondsPerQuestion}s
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg">
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-success/10 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">💰</span>
-                  <span className="text-sm font-medium">Per correct answer</span>
+                  <span className="text-lg sm:text-xl">💰</span>
+                  <span className="text-xs sm:text-sm font-medium">Per correct answer</span>
                 </div>
-                <span className="text-lg font-bold text-success">+{config.coinsPerCorrect}</span>
+                <span className="text-base sm:text-lg font-bold text-success">+{config.coinsPerCorrect}</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg">
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-success/10 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">🎁</span>
-                  <span className="text-sm font-medium">Completion bonus</span>
+                  <span className="text-lg sm:text-xl">🎁</span>
+                  <span className="text-xs sm:text-sm font-medium">Completion bonus</span>
                 </div>
-                <span className="text-lg font-bold text-success">+{config.completionCoins}</span>
+                <span className="text-base sm:text-lg font-bold text-success">+{config.completionCoins}</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg border-2 border-success">
+              <div className="flex items-center justify-between p-2 sm:p-3 bg-success/10 rounded-lg border-2 border-success">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">🏆</span>
-                  <span className="text-sm font-medium">Max coins possible</span>
+                  <span className="text-lg sm:text-xl">🏆</span>
+                  <span className="text-xs sm:text-sm font-medium">Max coins possible</span>
                 </div>
-                <span className="text-lg font-bold text-success">{totalCoins}</span>
+                <span className="text-base sm:text-lg font-bold text-success">{totalCoins}</span>
               </div>
             </div>
           )}
 
-          <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1.5">
-              <p className="flex items-start gap-2">
-                <span className="text-sm mt-0.5">ℹ️</span>
-                <span>You can close and restart the quiz at anytime. Once completed, you can only retake the quiz next day.</span>
+          <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+              <p className="flex items-start gap-1.5">
+                <span className="text-xs mt-0.5">ℹ️</span>
+                <span className="text-xs leading-tight">You can close and restart the quiz at anytime. Once completed, you can only retake the quiz next day.</span>
               </p>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <button
               onClick={startQuiz}
-              className="w-full py-3 rounded-lg bg-accent text-white text-sm sm:text-base font-medium hover:bg-accent/90 transition-colors active:scale-95"
+              className="w-full py-2.5 rounded-lg bg-accent text-white text-xs sm:text-sm font-medium hover:bg-accent/90 transition-colors active:scale-95"
             >
               Start Quiz
             </button>
@@ -315,7 +315,7 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
                 onClose();
                 setState("preview");
               }}
-              className="w-full py-2 sm:py-2.5 text-xs sm:text-sm text-gray-500 hover:text-gray-600 transition-colors"
+              className="w-full py-2 text-xs text-gray-500 hover:text-gray-600 transition-colors"
             >
               Cancel
             </button>
