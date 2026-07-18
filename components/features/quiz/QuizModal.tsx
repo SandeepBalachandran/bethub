@@ -311,10 +311,7 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
               Start Quiz
             </button>
             <button
-              onClick={() => {
-                onClose();
-                setState("preview");
-              }}
+              onClick={onClose}
               className="w-full py-2 text-xs text-gray-500 hover:text-gray-600 transition-colors"
             >
               Cancel
@@ -335,11 +332,7 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4 break-words">{error}</p>
           </div>
           <button
-            onClick={() => {
-              onClose();
-              setState("loading");
-              setError("");
-            }}
+            onClick={onClose}
             className="w-full py-2 sm:py-3 rounded-lg bg-accent text-white text-xs sm:text-sm font-medium hover:bg-accent/90 transition-colors"
           >
             Close
@@ -431,10 +424,7 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
           </div>
 
           <button
-            onClick={() => {
-              onClose();
-              setState("loading");
-            }}
+            onClick={onClose}
             className="w-full py-2 sm:py-2.5 text-xs sm:text-sm text-gray-500 hover:text-gray-600 transition-colors"
           >
             Close
@@ -525,10 +515,7 @@ export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
 
           <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4">
             <button
-              onClick={() => {
-                onClose();
-                setState("loading");
-              }}
+              onClick={onClose}
               className="w-full py-2 sm:py-3 rounded-lg bg-accent text-white text-xs sm:text-sm font-medium hover:bg-accent/90 transition-colors active:scale-95"
             >
               Close

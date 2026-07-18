@@ -52,100 +52,100 @@ export default async function AdminDashboardPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-4 sm:p-6">
       <div className="flex flex-col gap-3 sm:gap-4">
-        <h1 className="text-2xl font-bold gradient-text">Admin Dashboard</h1>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap text-xs sm:text-sm">
-          <Link href="/admin/sync" className="rounded-full bg-success/10 px-3 py-1.5 text-center text-success hover:bg-success/15 transition-colors">
-            Sync results
+        <h1 className="text-xl sm:text-2xl font-bold gradient-text">Admin Dashboard</h1>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:flex md:flex-wrap text-xs sm:text-sm">
+          <Link href="/admin/sync" className="rounded-full bg-success/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-success hover:bg-success/15 transition-colors">
+            Sync
           </Link>
-          <Link href="/admin/matches" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
-            Manage matches
+          <Link href="/admin/matches" className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Matches
           </Link>
-          <Link href="/admin/users" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
-            Manage players
+          <Link href="/admin/users" className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Players
           </Link>
           <Link
             href="/admin/predictions"
-            className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors"
+            className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors"
           >
-            View predictions
+            Predict
           </Link>
-          <Link href="/admin/money" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
-            View finances
+          <Link href="/admin/money" className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Finance
           </Link>
-          <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
-            Manage rewards
+          <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Rewards
           </Link>
-          <Link href="/admin/quiz" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
-            Manage quiz
+          <Link href="/admin/quiz" className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Quiz
           </Link>
-          <Link href="/admin/coins" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
-            Coin history
+          <Link href="/admin/coins" className="rounded-full bg-accent/10 px-2 sm:px-3 py-1 sm:py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Coins
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 md:grid-cols-4">
         <StatCard label="Players" value={userCount} color="accent" />
         <StatCard
-          label="Matches completed"
-          value={`${finishedCount} / ${matchCount}`}
+          label="Matches"
+          value={`${finishedCount}/${matchCount}`}
           color="secondary"
         />
         <Link href="/admin/predictions" className="block">
-          <StatCard label="Predictions submitted" value={predictionCount} color="highlight" />
+          <StatCard label="Predict" value={predictionCount} color="highlight" />
         </Link>
-        <StatCard label="Prediction %" value={`${predictionPercentage}%`} color="success" />
-        <Link href="/admin/money" className="col-span-2 block sm:col-span-1">
-          <StatCard label="Payments" value={formatMoney(tournamentNet)} color="success" />
+        <StatCard label="Pred %" value={`${predictionPercentage}%`} color="success" />
+        <Link href="/admin/money" className="col-span-2 block md:col-span-1">
+          <StatCard label="Payment" value={formatMoney(tournamentNet)} color="success" />
         </Link>
       </div>
 
       <SendNotificationForm users={players} />
 
       <section className="card space-y-2 p-4">
-        <h2 className="text-lg font-medium">Leaderboard</h2>
-        <ol className="divide-y divide-[color-mix(in_srgb,var(--foreground)_8%,transparent)] text-sm">
+        <h2 className="text-base sm:text-lg font-medium">Leaderboard</h2>
+        <ol className="divide-y divide-[color-mix(in_srgb,var(--foreground)_8%,transparent)] text-xs sm:text-sm">
           {leaderboard.map((entry, index) => (
-            <li key={entry.userId} className="flex justify-between py-2">
-              <span>
+            <li key={entry.userId} className="flex justify-between py-2 gap-2">
+              <span className="truncate">
                 {index + 1}. {entry.name}
               </span>
-              <span className="font-medium">{entry.total}</span>
+              <span className="font-medium flex-shrink-0">{entry.total}</span>
             </li>
           ))}
         </ol>
       </section>
 
       <section className="card space-y-4 p-4">
-        <h2 className="text-lg font-medium">💰 Coins System</h2>
+        <h2 className="text-base sm:text-lg font-medium">💰 Coins System</h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-3 bg-accent/10 rounded-lg">
-            <p className="text-xs text-gray-600 dark:text-gray-400">Total Coins</p>
-            <p className="text-lg font-bold text-accent">{totalCoinsInSystem}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          <div className="p-2 sm:p-3 bg-accent/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
+            <p className="text-base sm:text-lg font-bold text-accent">{totalCoinsInSystem}</p>
           </div>
-          <div className="p-3 bg-success/10 rounded-lg">
-            <p className="text-xs text-gray-600 dark:text-gray-400">Users Active</p>
-            <p className="text-lg font-bold text-success">{usersWithCoins_} / {userCount}</p>
+          <div className="p-2 sm:p-3 bg-success/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Active</p>
+            <p className="text-base sm:text-lg font-bold text-success">{usersWithCoins_}/{userCount}</p>
           </div>
-          <div className="p-3 bg-highlight/10 rounded-lg">
-            <p className="text-xs text-gray-600 dark:text-gray-400">Collected Coins</p>
-            <p className="text-lg font-bold text-highlight-foreground dark:text-highlight">{usersWhoCollectedCoins}</p>
+          <div className="p-2 sm:p-3 bg-highlight/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Collected</p>
+            <p className="text-base sm:text-lg font-bold text-highlight-foreground dark:text-highlight">{usersWhoCollectedCoins}</p>
           </div>
-          <div className="p-3 bg-secondary/10 rounded-lg">
-            <p className="text-xs text-gray-600 dark:text-gray-400">Avg per User</p>
-            <p className="text-lg font-bold text-secondary">{avgCoinsPerUser}</p>
+          <div className="p-2 sm:p-3 bg-secondary/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Avg/User</p>
+            <p className="text-base sm:text-lg font-bold text-secondary">{avgCoinsPerUser}</p>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-[color-mix(in_srgb,var(--foreground)_8%,transparent)]">
-                <th className="text-left py-2 px-2">Player</th>
-                <th className="text-right py-2 px-2">💰 Balance</th>
-                <th className="text-center py-2 px-2">Status</th>
-                <th className="text-right py-2 px-2">Days</th>
+                <th className="text-left py-2 px-1 sm:px-2">Name</th>
+                <th className="text-right py-2 px-1 sm:px-2">💰</th>
+                <th className="text-center py-2 px-1 sm:px-2">Collect</th>
+                <th className="text-right py-2 px-1 sm:px-2">Cnt</th>
               </tr>
             </thead>
             <tbody>
@@ -155,16 +155,16 @@ export default async function AdminDashboardPage() {
                 const hasCollected = rewardCount > 0;
                 return (
                   <tr key={user.id} className="border-b border-[color-mix(in_srgb,var(--foreground)_4%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_2%,transparent)]">
-                    <td className="py-2 px-2">{user.name}</td>
-                    <td className="text-right py-2 px-2 font-semibold">{balance}</td>
-                    <td className="text-center py-2 px-2">
-                      <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                    <td className="py-2 px-1 sm:px-2 truncate">{user.name}</td>
+                    <td className="text-right py-2 px-1 sm:px-2 font-semibold">{balance}</td>
+                    <td className="text-center py-2 px-1 sm:px-2">
+                      <span className={`inline-block px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-semibold ${
                         hasCollected ? "bg-success/20 text-success" : "bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                       }`}>
-                        {hasCollected ? "✓ Collected" : "No coins"}
+                        {hasCollected ? "✓" : "✗"}
                       </span>
                     </td>
-                    <td className="text-right py-2 px-2 text-gray-600 dark:text-gray-400">{rewardCount}</td>
+                    <td className="text-right py-2 px-1 sm:px-2 text-gray-600 dark:text-gray-400">{rewardCount}</td>
                   </tr>
                 );
               })}
@@ -195,9 +195,9 @@ function StatCard({
   readonly color: keyof typeof STAT_CARD_COLORS;
 }) {
   return (
-    <div className={`card card-interactive h-full border-t-4 p-4 ${STAT_CARD_COLORS[color]}`}>
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-xl font-bold wrap-break-word">{value}</p>
+    <div className={`card card-interactive h-full border-t-4 p-2 sm:p-4 ${STAT_CARD_COLORS[color]}`}>
+      <p className="text-xs sm:text-sm text-gray-500">{label}</p>
+      <p className="text-base sm:text-lg md:text-xl font-bold break-words">{value}</p>
     </div>
   );
 }
