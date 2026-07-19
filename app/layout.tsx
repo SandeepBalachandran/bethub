@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SessionProvider } from "@/app/SessionProvider";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PopupManager } from "@/components/PopupManager";
 import { QuizFab } from "@/components/QuizFab";
@@ -32,12 +33,14 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col pb-16 sm:pb-0">
         <ThemeProvider attribute="class" defaultTheme="light">
-          <DevelopmentBanner />
-          <PopupManager />
-          <QuizFab />
-          <SiteHeader />
-          {children}
-          <Toaster richColors position="top-center" />
+          <SessionProvider>
+            <DevelopmentBanner />
+            <PopupManager />
+            <QuizFab />
+            <SiteHeader />
+            {children}
+            <Toaster richColors position="top-center" />
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

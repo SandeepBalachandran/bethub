@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { QuizModal } from "@/components/features/quiz/QuizModal";
 
 interface QuizConfig {
@@ -17,6 +18,7 @@ interface QuizResults {
 }
 
 export function QuizFab() {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [hasPlayedToday, setHasPlayedToday] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,8 @@ export function QuizFab() {
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
+    if (!session) return;
+
     const initializeQuiz = async () => {
       try {
         // Fetch quiz status and config in parallel
@@ -59,9 +63,9 @@ export function QuizFab() {
     };
 
     initializeQuiz();
-  }, []);
+  }, [session]);
 
-  if (loading) return null;
+  if (!session || loading) return null;
 
   // Show checkmark after playing today
   if (hasPlayedToday) {

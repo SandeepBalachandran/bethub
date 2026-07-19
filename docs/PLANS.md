@@ -415,7 +415,76 @@ The original spec (Milestone 1) specified admin-provisioned accounts only ("no s
 
 ---
 
-## Summary: All 25 Milestones
+## Milestone 26: Daily Football Quiz (Engagement & Gamification)
+
+### Context
+
+Introduce a daily engagement loop: players complete a 7-question football trivia quiz that resets at midnight UTC. Quiz rewards coins (same currency as Milestones 16–18), incentivizing daily app visits. Questions are admin-authored, difficulty-mixed (easy/medium/hard), and the same set is shown to all users each day. Players can retake the quiz same day but earn coins only once.
+
+### Scope
+
+1. **Prisma schema additions** (`schema.prisma`):
+   - `QuizQuestion` — `id`, `question`, `options` (4 strings), `correctIndex` (0–3), `difficulty` (EASY/MEDIUM/HARD enum), `active`, `createdAt`.
+   - `DailyQuiz` — `id`, `date` (YYYY-MM-DD, unique), `questionIds` (array of question IDs, fixed order), `createdAt`. Lazily generated once per day on first request.
+   - `QuizConfig` — singleton with `questionsPerQuiz`, `secondsPerQuestion`, `completionCoins`, `coinsPerCorrect`.
+   - `QuizAttempt` — `id`, `userId`, `date`, `answers` (JSON array), `correctCount`, `coinsAwarded`, `createdAt`. No unique constraint; retakes allowed.
+   - `enum QuizDifficulty` — EASY, MEDIUM, HARD.
+
+2. **`lib/quiz.ts`** — Core quiz logic:
+   - `todayDateString()` — UTC date string (YYYY-MM-DD).
+   - `getOrCreateTodaysQuiz()` — fetch/create today's `DailyQuiz`, randomly sample from active `QuizQuestion` stratified by difficulty.
+   - `getQuizConfig()` — singleton fetch-or-create (cached like `RewardConfig`).
+   - `submitQuizAttempt(userId, date, answers)` — server-side validate answers, calculate coins, write `QuizAttempt`, call `awardCoins()` with reason "daily_quiz", return results.
+
+3. **API routes**:
+   - `GET /api/quiz/today` — `requireAuth()`, returns today's questions (no `correctIndex`) + `secondsPerQuestion`.
+   - `POST /api/quiz/submit` — `requireAuth()`, body `{ answers }`, calls `submitQuizAttempt()`, returns `{ correctCount, coinsAwarded, newBalance }`.
+   - `GET /api/quiz/results` — `requireAuth()`, fetches today's `QuizAttempt` + `CoinBalance`, returns results for already-played quiz.
+   - `GET /api/quiz/status` — `requireAuth()`, returns `{ hasPlayedToday, questionsPerQuiz }`.
+   - `GET /api/quiz/config` — `requireAuth()`, returns `QuizConfig` (timer, coin amounts).
+
+4. **Admin quiz management** (`app/(admin)/admin/quiz/page.tsx`):
+   - Admin page (server component) to manage quiz questions and configuration.
+   - Renders `QuizConfigForm` — edit config (questions per quiz, seconds per question, coin rewards).
+   - Renders `QuizQuestionForm` — add new questions (text, 4 options, correct answer, difficulty).
+   - Table listing all questions with difficulty badge, active toggle, delete button.
+   - Seed mechanism: admin can bulk-import questions or add manually.
+
+5. **User-facing UI**:
+   - `components/QuizFab.tsx` — floating button (fixed bottom-right, soccer ball emoji) that opens quiz modal. Only renders if authenticated (uses `useSession()`). Shows checkmark if already played today, allows clicking to view results.
+   - `components/features/quiz/QuizModal.tsx` — full-screen overlay quiz with countdown timer per question, auto-advance on timeout or answer selection, final results screen showing score + coins earned + new balance.
+   - `components/DevelopmentBanner.tsx` — sticky top banner for dev environment (already implemented).
+   - Loading state during submission prevents user interaction with spinner + backdrop.
+
+6. **Database utilities**:
+   - `scripts/clear-dev-quiz.js` — clears all `QuizAttempt` records from dev database (keeps questions/config intact).
+
+### Key files
+
+- `prisma/schema.prisma` — schema additions (models + enum).
+- `lib/quiz.ts` — quiz logic (config, today's quiz generation, submission, validation).
+- `app/api/quiz/today/route.ts`, `app/api/quiz/submit/route.ts`, `app/api/quiz/results/route.ts`, `app/api/quiz/status/route.ts`, `app/api/quiz/config/route.ts`.
+- `app/(admin)/admin/quiz/page.tsx`, `components/features/admin/QuizConfigForm.tsx`, `components/features/admin/QuizQuestionForm.tsx`.
+- `components/QuizFab.tsx`, `components/features/quiz/QuizModal.tsx`, `components/DevelopmentBanner.tsx`.
+- `scripts/clear-dev-quiz.js`.
+
+### Verification
+
+1. Schema migration — `npx prisma db push` succeeds; `QuizQuestion`, `DailyQuiz`, `QuizConfig`, `QuizAttempt` tables created.
+2. Admin adds 10+ questions across EASY/MEDIUM/HARD via `/admin/quiz`, sets config (7 questions/quiz, 10s timer, 20 completion coins, 10 coins/correct).
+3. User authenticated — floating soccer ball icon appears on main pages; clicking opens quiz modal.
+4. Quiz playback — timer counts down per question, auto-advances, final question auto-submits immediately, results displayed (score, coins, new balance).
+5. Coins awarded — `CoinBalance` increments, `CoinTransaction` record created with reason "daily_quiz", visible on `/rewards`.
+6. Same-day retake — player takes quiz again same day, new `QuizAttempt` logged, but no additional coins awarded (only once per day).
+7. Daily reset — wait past UTC midnight (or manipulate dev date), new `DailyQuiz` generated with fresh question set, old quiz history preserved.
+8. Unauthenticated pages — QuizFab doesn't render on `/login`, `/signup`, or other unauth pages.
+9. Build succeeds — `npm run build` passes TypeScript checks, no errors.
+
+**Status:** ✅ User-facing features implemented (QuizFab, QuizModal, results fetching, loading states, sticky banner). ⏳ Admin UI and core API routes still pending. Database schema and utilities ready for integration.
+
+---
+
+## Summary: All 26 Milestones
 
 | # | Title | Status |
 |---|-------|--------|
@@ -430,6 +499,7 @@ The original spec (Milestone 1) specified admin-provisioned accounts only ("no s
 | 23 | Most-Picked Players & Trending | ✅ |
 | 24 | Notification Eligibility | ✅ |
 | 25 | Self-Signup with Email Verification | 🔄 Ready for implementation |
+| 26 | Daily Football Quiz | 🔄 User UI done; admin + API pending |
 
 ---
 
