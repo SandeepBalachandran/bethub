@@ -52,7 +52,8 @@ export async function getUserMoney(userId: string): Promise<UserMoney> {
           wonOnPenalties: match.wonOnPenalties,
         },
         actualScorerIds,
-        moneyConfig
+        moneyConfig,
+        prediction.usedPointsBooster
       );
 
       currentBalance += money.total;

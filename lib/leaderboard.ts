@@ -18,6 +18,7 @@ type FinishedMatchWithPredictions = {
     userId: string;
     winnerTeamId: string;
     scorers: { playerId: string }[];
+    usedPointsBooster: boolean;
   }[];
 };
 
@@ -54,7 +55,8 @@ function computeLeaderboardEntries(
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
         { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
-        actualScorerPlayerIds
+        actualScorerPlayerIds,
+        prediction.usedPointsBooster
       );
 
       entry.winnerPoints += points.winnerPoints;
@@ -78,7 +80,9 @@ async function getUsersAndFinishedMatches() {
         winnerTeamId: true,
         wonOnPenalties: true,
         scorers: true,
-        predictions: { include: { scorers: true } },
+        predictions: {
+          select: { userId: true, winnerTeamId: true, scorers: true, usedPointsBooster: true }
+        },
       },
       orderBy: { kickoffTime: "asc" },
     }),
