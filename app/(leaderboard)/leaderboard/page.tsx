@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { requireAuth } from "@/lib/authz";
+import { requireFeaturePage } from "@/lib/feature-flags";
 import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
 import { getRoundMvps, getUserWinnerStreak } from "@/lib/round-mvp";
@@ -20,6 +21,7 @@ const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "T
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
+  await requireFeaturePage("navLeaderboard", user.role);
 
   const [leaderboard, previousLeaderboard, roundMvps] = await Promise.all([
     getLeaderboard(),
