@@ -26,11 +26,9 @@ export function LeaderboardList({
 }: LeaderboardListProps) {
   const [sortBy, setSortBy] = useState<SortBy>("points");
 
-  // Celebrate the champions once per session when the tournament is over
+  // Celebrate the champions on every visit/reload once the tournament is over
   useEffect(() => {
-    if (!tournamentComplete || typeof sessionStorage === "undefined") return;
-    if (sessionStorage.getItem("winnerConfettiSeen")) return;
-    sessionStorage.setItem("winnerConfettiSeen", "1");
+    if (!tournamentComplete) return;
 
     const colors = ["#FFD700", "#FFA500", "#FF6B6B", "#4ECDC4", "#A78BFA"];
     confetti({ particleCount: 180, spread: 100, origin: { y: 0.5 }, colors });

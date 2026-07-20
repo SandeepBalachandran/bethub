@@ -110,16 +110,16 @@ export function LeaderboardRow({
         <CartoonAvatar userId={entry.userId} name={entry.name} avatarUrl={entry.avatarUrl} />
 
         <div className="min-w-0 flex-1">
-        <p className="truncate text-xs sm:text-sm font-semibold">
-          {entry.name}
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+          <p className="truncate text-xs sm:text-sm font-semibold min-w-0">{entry.name}</p>
           {isCurrentUser && (
-            <span className="ml-1 rounded-full bg-highlight/20 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium text-highlight-foreground dark:text-highlight">
+            <span className="shrink-0 rounded-full bg-highlight/20 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium text-highlight-foreground dark:text-highlight">
               you
             </span>
           )}
           {winnerTag && (
             <span
-              className={`ml-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold ${
+              className={`shrink-0 whitespace-nowrap rounded-full px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold ${
                 rank === 1
                   ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-sm"
                   : "bg-gray-200 text-gray-700 dark:bg-white/15 dark:text-gray-200"
@@ -128,7 +128,7 @@ export function LeaderboardRow({
               {winnerTag}
             </span>
           )}
-          </p>
+          </div>
           <div className="mt-0.5 flex flex-wrap gap-0.5 sm:gap-1 text-[8px] sm:text-[10px]">
           <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
             W +{entry.winnerPoints}
